@@ -1,0 +1,13 @@
+# bin
+/cmd/httpway/main
+/cmd/httpway/httpway
+
+# generated files
+/go.mod.backup
+/handler_dynamic.go
+
+# editor
+/.vscode
+
+# misc
+/.envrc
