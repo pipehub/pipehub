@@ -5,10 +5,11 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/diegobernardes/httpway"
 	"github.com/hashicorp/hcl"
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
+
+	"github.com/httpway/httpway"
 )
 
 type config struct {

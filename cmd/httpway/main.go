@@ -5,7 +5,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
-	"github.com/diegobernardes/httpway"
+	"github.com/httpway/httpway"
 )
 
 func main() {

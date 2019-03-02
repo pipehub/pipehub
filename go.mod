@@ -1,4 +1,4 @@
-module github.com/diegobernardes/httpway
+module github.com/httpway/httpway
 
 require (
 	github.com/hashicorp/hcl v1.0.0
