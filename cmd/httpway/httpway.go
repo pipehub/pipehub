@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 
 	"github.com/hashicorp/hcl"
 	"github.com/mitchellh/mapstructure"
@@ -13,7 +15,22 @@ import (
 )
 
 type config struct {
-	Handler []configHandler `hcl:"handler"`
+	Handler []configHandler `hcl:"handler" mapstructure:"handler"`
+	Server  []configServer  `hcl:"server" mapstructure:"server"`
+}
+
+func (c config) server() configServer {
+	if len(c.Server) == 0 {
+		return configServer{
+			GracefulShutdown: "30s",
+			HTTP: []configServerHTTP{
+				{
+					Port: 80,
+				},
+			},
+		}
+	}
+	return c.Server[0]
 }
 
 func (c config) toGenerateConfig() httpway.GenerateConfig {
@@ -28,10 +45,39 @@ func (c config) toGenerateConfig() httpway.GenerateConfig {
 	return cfg
 }
 
+func (c config) toClientConfig() httpway.ClientConfig {
+	s := c.server()
+	return httpway.ClientConfig{
+		HTTP: httpway.ClientConfigHTTP{
+			Port: s.HTTP[0].Port,
+		},
+		AsyncErrHandler: asyncErrHandler,
+	}
+}
+
+func (c config) ctxShutdown() (ctx context.Context, ctxCancel func()) {
+	s := c.server()
+	duration, err := time.ParseDuration(s.GracefulShutdown)
+	if err != nil {
+		err = errors.Wrapf(err, "parse duration '%s' error", s.GracefulShutdown)
+		fatal(err)
+	}
+	return context.WithTimeout(context.Background(), duration)
+}
+
 type configHandler struct {
-	Path    string `hcl:"path"`
-	Version string `hcl:"version"`
-	Alias   string `hcl:"alias"`
+	Path    string `hcl:"path" mapstructure:"path"`
+	Version string `hcl:"version" mapstructure:"version"`
+	Alias   string `hcl:"alias" mapstructure:"alias"`
+}
+
+type configServer struct {
+	GracefulShutdown string             `hcl:"graceful-shutdown" mapstructure:"graceful-shutdown"`
+	HTTP             []configServerHTTP `hcl:"http" mapstructure:"http"`
+}
+
+type configServerHTTP struct {
+	Port int `hcl:"port" mapstructure:"port"`
 }
 
 func loadConfig(path string) (config, error) {
