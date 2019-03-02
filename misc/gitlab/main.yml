@@ -5,5 +5,5 @@ stages:
   - build
 
 include:
-  - .gitlab/quality.yml
-  - .gitlab/build.yml
+  - misc/gitlab/quality.yml
+  - misc/gitlab/build.yml
