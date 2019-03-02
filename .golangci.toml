@@ -4,7 +4,6 @@ deadline = "10m"
 [linters]
 disable-all = true
 enable      = [
-  # fast
   "govet",
   "structcheck",
   "varcheck",
@@ -21,8 +20,6 @@ enable      = [
   "prealloc",
   "scopelint",
   "gocritic",
-
-  # slow
   "staticcheck",
   "unused",
   "gosimple",
