@@ -20,7 +20,7 @@ endif
 
 go-linter:
 ifeq ($(EXEC_CONTAINER), false)
-	@golangci-lint run -c .golangci.toml
+	@golangci-lint run -c misc/golangci/golangci.toml
 else
 	TARGET=go-linter $(MAKE) docker-exec
 endif
