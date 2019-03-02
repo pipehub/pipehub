@@ -2,6 +2,11 @@ PROJECT_PATH      = /opt/httpway
 DOCKER_CI_IMAGE   = registry.gitlab.com/httpway/httpway/ci
 DOCKER_CI_VERSION = 1
 
+configure:
+	@git config pull.rebase true
+	@git config remote.origin.prune true
+	@git config branch.master.mergeoptions "--ff-only"
+
 pre-pr: go-test go-linter go-linter-vendor docker-linter
 
 go-test:
