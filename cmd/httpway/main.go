@@ -11,7 +11,10 @@ import (
 func main() {
 	var rootCmd = &cobra.Command{Use: "httpway"}
 	rootCmd.AddCommand(cmdGenerate())
-	rootCmd.Execute()
+	if err := rootCmd.Execute(); err != nil {
+		err = errors.Wrap(err, "httpway cli initialization error")
+		fatal(err)
+	}
 }
 
 func cmdGenerate() *cobra.Command {
