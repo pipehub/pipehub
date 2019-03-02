@@ -1,3 +1,3 @@
 package httpway
 
-type handler interface{}
+type handler interface{} // nolint: deadcode, unused

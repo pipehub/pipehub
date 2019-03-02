@@ -2,6 +2,10 @@
 /cmd/httpway/main
 /cmd/httpway/httpway
 
+# temporary files
+/bin
+/test.cover
+
 # generated files
 /go.mod.backup
 /handler_dynamic.go

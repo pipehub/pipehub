@@ -1,0 +1,9 @@
+image: registry.gitlab.com/httpway/httpway/ci:1
+
+stages:
+  - quality
+  - build
+
+include:
+  - .gitlab/quality.yml
+  - .gitlab/build.yml

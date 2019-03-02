@@ -1,0 +1,30 @@
+.quality:
+  stage: quality
+  variables:
+    EXEC_CONTAINER: 'false'
+
+.quality-not-master:
+  extends: .quality
+  except:
+    - master
+
+'quality:test':
+  extends: .quality
+  coverage: '/total:\s*\(statements\)\s*(\d*.\d*%)/'
+  script:
+    - make go-test
+
+'quality:go-linter':
+  extends: .quality-not-master
+  script:
+    - make go-linter
+
+'quality:go-linter-vendor':
+  extends: .quality-not-master
+  script:
+    - make go-linter-vendor
+
+'quality:docker-linter':
+  extends: .quality-not-master
+  script:
+    - make docker-linter
