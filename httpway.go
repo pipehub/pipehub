@@ -1,3 +1,13 @@
 package httpway
 
-type handler interface{} // nolint: deadcode, unused
+import (
+	"context"
+)
+
+type handlerInstance interface {
+	Close(ctx context.Context) error
+}
+
+type handler struct {
+	instance handlerInstance
+}
