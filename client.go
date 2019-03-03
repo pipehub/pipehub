@@ -19,8 +19,9 @@ type ClientConfigHTTP struct {
 
 // Client is httpway entrypoint.
 type Client struct {
-	cfg    ClientConfig
-	server *server
+	cfg            ClientConfig
+	server         *server
+	handlerManager *handlerManager
 }
 
 // Start httpway.
@@ -36,6 +37,10 @@ func (c *Client) Stop(ctx context.Context) error {
 	if err := c.server.stop(ctx); err != nil {
 		return errors.Wrap(err, "server stop error")
 	}
+
+	if err := c.handlerManager.close(ctx); err != nil {
+		return errors.Wrap(err, "handler manager close error")
+	}
 	return nil
 }
 
@@ -45,6 +50,7 @@ func (c *Client) init(cfg ClientConfig) {
 		c.cfg.AsyncErrHandler = func(error) {}
 	}
 	c.server = newServer(c)
+	c.handlerManager = newHandlerManager(c)
 }
 
 // NewClient return a configured httpway client.

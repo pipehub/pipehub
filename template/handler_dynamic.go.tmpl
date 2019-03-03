@@ -4,19 +4,31 @@
 package httpway
 {{ if gt (len .Handler) 0 }}
 import (
-  {{- range .Handler}}
-  {{.PathAlias}} "{{.Path}}"
+  "github.com/pkg/errors"
+
+  {{range .Handler -}}
+  {{.Alias}} "{{.Path}}"
   {{- end}}
 )
 {{ end }}
-func handlers() []handler {
+func handlers() ([]handler, error) {
   {{- if gt (len .Handler) 0 }}
-  return []handler {
-  {{- range .Handler}}
-    {{.Alias}}.Get(),
-  {{- end}}
+  var handlers []handler
+
+  {{ range .Handler -}}
+  {
+    client, err := {{.Alias}}.NewClient()
+    if err != nil {
+      return nil, errors.Wrap(err, "'{{.Path}}' initialization error")
+    }
+
+    h := handler {instance: client}
+    handlers = append(handlers, h)
   }
+  {{- end}}
+
+  return handlers, nil
   {{- else }}
-  return []handler {}
+  return []handler {}, nil
   {{- end }}
 }
