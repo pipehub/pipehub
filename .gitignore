@@ -5,6 +5,7 @@
 # temporary files
 /bin
 /test.cover
+/cmd/httpway/httpway.hcl
 
 # generated files
 /go.mod.backup
