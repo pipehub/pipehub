@@ -43,6 +43,11 @@ func cmdStartRun(configPath *string) func(*cobra.Command, []string) {
 			err = errors.Wrap(err, "load config error")
 			fatal(err)
 		}
+
+		if err := rawCfg.valid(); err != nil {
+			err = errors.Wrap(err, "invalid config")
+			fatal(err)
+		}
 		cfg := rawCfg.toClientConfig()
 
 		ctxShutdown, ctxShutdownCancel := rawCfg.ctxShutdown()

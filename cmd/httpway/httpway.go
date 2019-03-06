@@ -20,18 +20,17 @@ type config struct {
 	Server  []configServer  `hcl:"server" mapstructure:"server"`
 }
 
-func (c config) server() configServer {
-	if len(c.Server) == 0 {
-		return configServer{
-			GracefulShutdown: "30s",
-			HTTP: []configServerHTTP{
-				{
-					Port: 80,
-				},
-			},
+func (c config) valid() error {
+	if len(c.Server) > 1 {
+		return errors.New("more then one 'server' config block found, only one is allowed")
+	}
+
+	for _, s := range c.Server {
+		if err := s.valid(); err != nil {
+			return err
 		}
 	}
-	return c.Server[0]
+	return nil
 }
 
 func (c config) toGenerateConfig() httpway.GenerateConfig {
@@ -47,31 +46,37 @@ func (c config) toGenerateConfig() httpway.GenerateConfig {
 }
 
 func (c config) toClientConfig() httpway.ClientConfig {
-	s := c.server()
+	cfg := httpway.ClientConfig{
+		AsyncErrHandler: asyncErrHandler,
+		Host:            make([]httpway.ClientConfigHost, 0, len(c.Host)),
+	}
 
-	hosts := make([]httpway.ClientConfigHost, 0, len(c.Host))
 	for _, host := range c.Host {
-		hosts = append(hosts, httpway.ClientConfigHost{
+		cfg.Host = append(cfg.Host, httpway.ClientConfigHost{
 			Endpoint: host.Endpoint,
 			Origin:   host.Origin,
 			Handler:  host.Handler,
 		})
 	}
 
-	return httpway.ClientConfig{
-		HTTP: httpway.ClientConfigHTTP{
-			Port: s.HTTP[0].Port,
-		},
-		Host:            hosts,
-		AsyncErrHandler: asyncErrHandler,
+	if (len(c.Server) > 0) && (len(c.Server[0].HTTP) > 0) {
+		cfg.HTTP = httpway.ClientConfigHTTP{
+			Port: c.Server[0].HTTP[0].Port,
+		}
 	}
+
+	return cfg
 }
 
 func (c config) ctxShutdown() (ctx context.Context, ctxCancel func()) {
-	s := c.server()
-	duration, err := time.ParseDuration(s.GracefulShutdown)
+	if (len(c.Server) == 0) || (c.Server[0].GracefulShutdown == "") {
+		return context.Background(), func() {}
+	}
+
+	raw := c.Server[0].GracefulShutdown
+	duration, err := time.ParseDuration(raw)
 	if err != nil {
-		err = errors.Wrapf(err, "parse duration '%s' error", s.GracefulShutdown)
+		err = errors.Wrapf(err, "parse duration '%s' error", raw)
 		fatal(err)
 	}
 	return context.WithTimeout(context.Background(), duration)
@@ -92,6 +97,13 @@ type configHost struct {
 type configServer struct {
 	GracefulShutdown string             `hcl:"graceful-shutdown" mapstructure:"graceful-shutdown"`
 	HTTP             []configServerHTTP `hcl:"http" mapstructure:"http"`
+}
+
+func (c configServer) valid() error {
+	if len(c.HTTP) > 1 {
+		return errors.New("more then one 'server.http' config block found, only one is allowed")
+	}
+	return nil
 }
 
 type configServerHTTP struct {

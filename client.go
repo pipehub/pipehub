@@ -13,9 +13,22 @@ type ClientConfig struct {
 	AsyncErrHandler func(error)
 }
 
+func (c *ClientConfig) setDefaultValues() {
+	c.HTTP.setDefaultValues()
+	if c.AsyncErrHandler == nil {
+		c.AsyncErrHandler = func(error) {}
+	}
+}
+
 // ClientConfigHTTP holds the http server configuration.
 type ClientConfigHTTP struct {
 	Port int
+}
+
+func (c *ClientConfigHTTP) setDefaultValues() {
+	if c.Port == 0 {
+		c.Port = 80
+	}
 }
 
 // ClientConfigHost holds the configuration to direct the request from hosts to handlers.
@@ -53,6 +66,7 @@ func (c *Client) Stop(ctx context.Context) error {
 }
 
 func (c *Client) init(cfg ClientConfig) error {
+	cfg.setDefaultValues()
 	c.cfg = cfg
 	if c.cfg.AsyncErrHandler == nil {
 		c.cfg.AsyncErrHandler = func(error) {}
