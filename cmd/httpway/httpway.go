@@ -15,6 +15,7 @@ import (
 )
 
 type config struct {
+	Host    []configHost    `hcl:"host" mapstructure:"host"`
 	Handler []configHandler `hcl:"handler" mapstructure:"handler"`
 	Server  []configServer  `hcl:"server" mapstructure:"server"`
 }
@@ -47,10 +48,21 @@ func (c config) toGenerateConfig() httpway.GenerateConfig {
 
 func (c config) toClientConfig() httpway.ClientConfig {
 	s := c.server()
+
+	hosts := make([]httpway.ClientConfigHost, 0, len(c.Host))
+	for _, host := range c.Host {
+		hosts = append(hosts, httpway.ClientConfigHost{
+			Endpoint: host.Endpoint,
+			Origin:   host.Origin,
+			Handler:  host.Handler,
+		})
+	}
+
 	return httpway.ClientConfig{
 		HTTP: httpway.ClientConfigHTTP{
 			Port: s.HTTP[0].Port,
 		},
+		Host:            hosts,
 		AsyncErrHandler: asyncErrHandler,
 	}
 }
@@ -69,6 +81,12 @@ type configHandler struct {
 	Path    string `hcl:"path" mapstructure:"path"`
 	Version string `hcl:"version" mapstructure:"version"`
 	Alias   string `hcl:"alias" mapstructure:"alias"`
+}
+
+type configHost struct {
+	Endpoint string `hcl:"endpoint" mapstructure:"endpoint"`
+	Origin   string `hcl:"origin" mapstructure:"origin"`
+	Handler  string `hcl:"handler" mapstructure:"handler"`
 }
 
 type configServer struct {

@@ -2,6 +2,6 @@
 
 package httpway
 
-func fetchHandlers() []handler { // nolint: deadcode, unused
-	return nil
+func fetchHandlers() ([]handler, error) {
+	return nil, nil
 }
