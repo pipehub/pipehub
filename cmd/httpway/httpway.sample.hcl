@@ -1,6 +1,11 @@
 server {
   graceful-shutdown = "10s"
 
+  action {
+    not-found = "base.NotFound"
+    panic     = "base.Panic"
+  }
+
   http {
     port = 80
   }
@@ -14,6 +19,6 @@ host {
 
 handler {
   path    = "github.com/httpway/handler"
-  version = "v0.3.0"
+  version = "v0.5.0"
   alias   = "base"
 }

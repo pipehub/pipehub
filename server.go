@@ -19,12 +19,21 @@ type server struct {
 
 func (s *server) init() {
 	s.base = &http.Server{
-		Addr: fmt.Sprintf(":%d", s.client.cfg.HTTP.Port),
+		Addr: fmt.Sprintf(":%d", s.client.cfg.Server.HTTP.Port),
 	}
 }
 
 func (s *server) start() error {
 	r := chi.NewRouter()
+
+	if s.client.handlerManager.action.notFound != nil {
+		r.NotFound(s.client.handlerManager.action.notFound)
+	}
+
+	if s.client.handlerManager.action.panik != nil {
+		r.Use(s.client.handlerManager.action.panik)
+	}
+
 	handlers, err := s.startHandlers()
 	if err != nil {
 		return errors.Wrap(err, "start handlers error")
@@ -67,6 +76,9 @@ func (s *server) startHandlers() (map[string]*chi.Mux, error) {
 		}
 		proxy := &httputil.ReverseProxy{Director: director}
 		r := chi.NewRouter()
+		if s.client.handlerManager.action.panik != nil {
+			r.Use(s.client.handlerManager.action.panik)
+		}
 		r.Use(h.fn)
 		r.Mount("/", http.HandlerFunc(proxy.ServeHTTP))
 		handlers[host.Endpoint] = r
