@@ -59,9 +59,16 @@ func (c config) toClientConfig() httpway.ClientConfig {
 		})
 	}
 
-	if (len(c.Server) > 0) && (len(c.Server[0].HTTP) > 0) {
-		cfg.HTTP = httpway.ClientConfigHTTP{
-			Port: c.Server[0].HTTP[0].Port,
+	if len(c.Server) > 0 {
+		if len(c.Server[0].Action) > 0 {
+			cfg.Server.Action.NotFound = c.Server[0].Action[0].NotFound
+			cfg.Server.Action.Panic = c.Server[0].Action[0].Panic
+		}
+
+		if len(c.Server[0].HTTP) > 0 {
+			cfg.Server.HTTP = httpway.ClientConfigServerHTTP{
+				Port: c.Server[0].HTTP[0].Port,
+			}
 		}
 	}
 
@@ -95,19 +102,29 @@ type configHost struct {
 }
 
 type configServer struct {
-	GracefulShutdown string             `hcl:"graceful-shutdown" mapstructure:"graceful-shutdown"`
-	HTTP             []configServerHTTP `hcl:"http" mapstructure:"http"`
+	GracefulShutdown string               `hcl:"graceful-shutdown" mapstructure:"graceful-shutdown"`
+	HTTP             []configServerHTTP   `hcl:"http" mapstructure:"http"`
+	Action           []configServerAction `hcl:"action" mapstructure:"action"`
 }
 
 func (c configServer) valid() error {
 	if len(c.HTTP) > 1 {
 		return errors.New("more then one 'server.http' config block found, only one is allowed")
 	}
+
+	if len(c.Action) > 1 {
+		return errors.New("more then one 'server.action' config block found, only one is allowed")
+	}
 	return nil
 }
 
 type configServerHTTP struct {
 	Port int `hcl:"port" mapstructure:"port"`
+}
+
+type configServerAction struct {
+	NotFound string `hcl:"not-found" mapstructure:"not-found"`
+	Panic    string `hcl:"panic" mapstructure:"panic"`
 }
 
 func loadConfig(path string) (config, error) {

@@ -8,24 +8,40 @@ import (
 
 // ClientConfig holds the client configuration.
 type ClientConfig struct {
-	HTTP            ClientConfigHTTP
+	Server          ClientConfigServer
 	Host            []ClientConfigHost
 	AsyncErrHandler func(error)
 }
 
 func (c *ClientConfig) setDefaultValues() {
-	c.HTTP.setDefaultValues()
+	c.Server.setDefaultValues()
 	if c.AsyncErrHandler == nil {
 		c.AsyncErrHandler = func(error) {}
 	}
 }
 
-// ClientConfigHTTP holds the http server configuration.
-type ClientConfigHTTP struct {
+// ClientConfigServer holds the server configuration.
+type ClientConfigServer struct {
+	HTTP   ClientConfigServerHTTP
+	Action ClientConfigServerAction
+}
+
+func (c *ClientConfigServer) setDefaultValues() {
+	c.HTTP.setDefaultValues()
+}
+
+// ClientConfigServerAction holds the action server configuration.
+type ClientConfigServerAction struct {
+	NotFound string
+	Panic    string
+}
+
+// ClientConfigServerHTTP holds the http server configuration.
+type ClientConfigServerHTTP struct {
 	Port int
 }
 
-func (c *ClientConfigHTTP) setDefaultValues() {
+func (c *ClientConfigServerHTTP) setDefaultValues() {
 	if c.Port == 0 {
 		c.Port = 80
 	}
