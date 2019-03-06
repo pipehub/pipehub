@@ -48,7 +48,12 @@ func cmdStartRun(configPath *string) func(*cobra.Command, []string) {
 		ctxShutdown, ctxShutdownCancel := rawCfg.ctxShutdown()
 		defer ctxShutdownCancel()
 
-		c := httpway.NewClient(cfg)
+		c, err := httpway.NewClient(cfg)
+		if err != nil {
+			err = errors.Wrap(err, "httpway new client error")
+			fatal(err)
+		}
+
 		if err := c.Start(); err != nil {
 			err = errors.Wrap(err, "httpway start error")
 			fatal(err)

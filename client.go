@@ -9,12 +9,20 @@ import (
 // ClientConfig holds the client configuration.
 type ClientConfig struct {
 	HTTP            ClientConfigHTTP
+	Host            []ClientConfigHost
 	AsyncErrHandler func(error)
 }
 
 // ClientConfigHTTP holds the http server configuration.
 type ClientConfigHTTP struct {
 	Port int
+}
+
+// ClientConfigHost holds the configuration to direct the request from hosts to handlers.
+type ClientConfigHost struct {
+	Endpoint string
+	Origin   string
+	Handler  string
 }
 
 // Client is httpway entrypoint.
@@ -44,18 +52,26 @@ func (c *Client) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (c *Client) init(cfg ClientConfig) {
+func (c *Client) init(cfg ClientConfig) error {
 	c.cfg = cfg
 	if c.cfg.AsyncErrHandler == nil {
 		c.cfg.AsyncErrHandler = func(error) {}
 	}
+
+	var err error
+	c.handlerManager, err = newHandlerManager(c)
+	if err != nil {
+		return errors.Wrap(err, "handler manager new instance error")
+	}
 	c.server = newServer(c)
-	c.handlerManager = newHandlerManager(c)
+	return nil
 }
 
 // NewClient return a configured httpway client.
-func NewClient(cfg ClientConfig) Client {
+func NewClient(cfg ClientConfig) (Client, error) {
 	var c Client
-	c.init(cfg)
-	return c
+	if err := c.init(cfg); err != nil {
+		return c, errors.Wrap(err, "client new instance error")
+	}
+	return c, nil
 }

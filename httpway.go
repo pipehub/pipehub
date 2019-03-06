@@ -2,6 +2,7 @@ package httpway
 
 import (
 	"context"
+	"net/http"
 )
 
 type handlerInstance interface {
@@ -9,5 +10,9 @@ type handlerInstance interface {
 }
 
 type handler struct {
+	name     string
+	endpoint string
 	instance handlerInstance
+	alias    string
+	fn       func(http.Handler) http.Handler
 }

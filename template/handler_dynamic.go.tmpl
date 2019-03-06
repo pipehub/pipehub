@@ -11,7 +11,7 @@ import (
   {{- end}}
 )
 {{ end }}
-func handlers() ([]handler, error) {
+func fetchHandlers() ([]handler, error) {
   {{- if gt (len .Handler) 0 }}
   var handlers []handler
 
@@ -22,7 +22,10 @@ func handlers() ([]handler, error) {
       return nil, errors.Wrap(err, "'{{.Path}}' initialization error")
     }
 
-    h := handler {instance: client}
+    h := handler {
+      instance: client,
+      alias:    "{{.Alias}}",
+    }
     handlers = append(handlers, h)
   }
   {{- end}}
