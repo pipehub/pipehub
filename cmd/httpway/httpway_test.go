@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -251,4 +254,94 @@ func TestConfigCtxShutdown(t *testing.T) {
 			require.True(t, (tdiff >= 0))
 		})
 	}
+}
+
+func TestLoadConfig(t *testing.T) {
+	tests := []struct {
+		name      string
+		path      string
+		expected  config
+		assertion require.ErrorAssertionFunc
+	}{
+		{
+			"success #1",
+			"loadConfig.success.1.hcl",
+			config{},
+			require.NoError,
+		},
+		{
+			"success #2",
+			"loadConfig.success.2.hcl",
+			config{
+				Host: []configHost{
+					{
+						Endpoint: "google",
+						Origin:   "https://www.google.com",
+						Handler:  "base.Default",
+					},
+				},
+				Handler: []configHandler{
+					{
+						Path:    "github.com/httpway/handler",
+						Version: "v0.5.1",
+						Alias:   "base",
+					},
+				},
+				Server: []configServer{
+					{
+						GracefulShutdown: "10s",
+						HTTP: []configServerHTTP{
+							{
+								Port: 80,
+							},
+						},
+						Action: []configServerAction{
+							{
+								NotFound: "base.NotFound",
+								Panic:    "base.Panic",
+							},
+						},
+					},
+				},
+			},
+			require.NoError,
+		},
+		{
+			"invalid hcl",
+			"loadConfig.fail.1.hcl",
+			config{},
+			require.Error,
+		},
+		{
+			"decode error",
+			"loadConfig.fail.2.hcl",
+			config{},
+			require.Error,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			path := testdataPath(t, tt.path)
+
+			actual, err := loadConfig(path)
+			tt.assertion(t, err)
+			if err != nil {
+				return
+			}
+
+			require.Equal(t, tt.expected, actual)
+		})
+	}
+}
+
+func testdataPath(t *testing.T, name string) string {
+	t.Helper()
+
+	_, file, _, ok := runtime.Caller(1)
+	if !ok {
+		panic("could not get the caller that invoked testdataPath")
+	}
+
+	return fmt.Sprintf("%s/testdata/%s", filepath.Dir(file), name)
 }
