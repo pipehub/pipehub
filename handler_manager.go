@@ -87,7 +87,12 @@ func (h handlerManager) initGeneric(id string) (interface{}, handler, error) {
 			return nil, handler{}, fmt.Errorf("invalid func '%s'", id)
 		}
 
-		rawFn := reflect.ValueOf(rawHandler.instance).MethodByName(fragments[1]).Interface()
+		value := reflect.ValueOf(rawHandler.instance).MethodByName(fragments[1])
+		if !value.IsValid() {
+			continue
+		}
+
+		rawFn := value.Interface()
 		return rawFn, rawHandler, nil
 	}
 
