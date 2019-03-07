@@ -16,3 +16,7 @@ type handler struct {
 	alias    string
 	fn       func(http.Handler) http.Handler
 }
+
+func (h handler) valid() bool {
+	return h.instance != nil
+}

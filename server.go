@@ -63,6 +63,10 @@ func (s *server) startHandlers() (map[string]*chi.Mux, error) {
 			return handlers, errors.Wrap(err, "fetch handler error")
 		}
 
+		if !h.valid() {
+			continue
+		}
+
 		origin, err := url.Parse(host.Origin)
 		if err != nil {
 			return handlers, errors.Wrapf(err, "parse url '%s' error", host.Origin)
