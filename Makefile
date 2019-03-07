@@ -14,9 +14,9 @@ build:
 
 generate:
 	@rm -f handler_dynamic.go
-	@$(MAKE) build
+	@make build
 	@./cmd/httpway/httpway generate -c $(CONFIG_PATH) -w $(WORKSPACE_PATH)
-	TAGS=handler @$(MAKE) build
+	@TAGS=handler make build
 
 pre-pr: go-test go-linter go-linter-vendor docker-linter
 
@@ -26,14 +26,14 @@ ifeq ($(EXEC_CONTAINER), false)
 	@go tool cover -func=test.cover
 	@rm -f test.cover
 else
-	TARGET=go-test $(MAKE) docker-exec
+	TARGET=go-test make docker-exec
 endif
 
 go-linter:
 ifeq ($(EXEC_CONTAINER), false)
 	@golangci-lint run -c misc/golangci/golangci.toml
 else
-	TARGET=go-linter $(MAKE) docker-exec
+	TARGET=go-linter make docker-exec
 endif
 
 go-linter-vendor:
@@ -42,14 +42,14 @@ ifeq ($(EXEC_CONTAINER), false)
 	@go mod vendor
 	@git diff --exit-code
 else
-	TARGET=go-linter-vendor $(MAKE) docker-exec
+	TARGET=go-linter-vendor make docker-exec
 endif
 
 docker-linter:
 ifeq ($(EXEC_CONTAINER), false)
 	@hadolint misc/docker/ci/Dockerfile
 else
-	TARGET=docker-linter $(MAKE) docker-exec
+	TARGET=docker-linter make docker-exec
 endif
 
 docker-exec:
