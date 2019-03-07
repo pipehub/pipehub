@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/hashicorp/hcl"
@@ -150,4 +152,14 @@ func loadConfig(path string) (config, error) {
 func fatal(err error) {
 	fmt.Println(err.Error())
 	os.Exit(1)
+}
+
+func wait() {
+	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
+	<-done
+}
+
+func asyncErrHandler(err error) {
+	fmt.Println(errors.Wrap(err, "async error occurred").Error())
+	done <- syscall.SIGTERM
 }

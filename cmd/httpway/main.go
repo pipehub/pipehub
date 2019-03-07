@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
@@ -117,14 +115,4 @@ func cmdGenerateRun(configPath, workspacePath *string) func(*cobra.Command, []st
 			fatal(err)
 		}
 	}
-}
-
-func wait() {
-	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
-	<-done
-}
-
-func asyncErrHandler(err error) {
-	fmt.Println(errors.Wrap(err, "async error occurred").Error())
-	done <- syscall.SIGTERM
 }
