@@ -1,4 +1,4 @@
-package httpway
+package pipehub
 
 import (
 	"context"
@@ -54,14 +54,14 @@ type ClientConfigHost struct {
 	Handler  string
 }
 
-// Client is httpway entrypoint.
+// Client is pipehub entrypoint.
 type Client struct {
 	cfg            ClientConfig
 	server         *server
 	handlerManager *handlerManager
 }
 
-// Start httpway.
+// Start pipehub.
 func (c *Client) Start() error {
 	if err := c.server.start(); err != nil {
 		return errors.Wrap(err, "server start error")
@@ -69,7 +69,7 @@ func (c *Client) Start() error {
 	return nil
 }
 
-// Stop the httpway.
+// Stop the pipehub.
 func (c *Client) Stop(ctx context.Context) error {
 	if err := c.server.stop(ctx); err != nil {
 		return errors.Wrap(err, "server stop error")
@@ -97,7 +97,7 @@ func (c *Client) init(cfg ClientConfig) error {
 	return nil
 }
 
-// NewClient return a configured httpway client.
+// NewClient return a configured pipehub client.
 func NewClient(cfg ClientConfig) (Client, error) {
 	var c Client
 	if err := c.init(cfg); err != nil {

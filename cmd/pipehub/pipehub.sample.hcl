@@ -18,7 +18,7 @@ host {
 }
 
 handler {
-  path    = "github.com/httpway/handler"
+  path    = "github.com/pipehub/handler"
   version = "v0.5.1"
   alias   = "base"
 }

@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/httpway/httpway"
+	"github.com/pipehub/pipehub"
 )
 
 func TestConfigValid(t *testing.T) {
@@ -83,12 +83,12 @@ func TestConfigToGenerateConfig(t *testing.T) {
 	tests := []struct {
 		name     string
 		config   config
-		expected []httpway.GenerateConfigHandler
+		expected []pipehub.GenerateConfigHandler
 	}{
 		{
 			"success #1",
 			config{},
-			[]httpway.GenerateConfigHandler{},
+			[]pipehub.GenerateConfigHandler{},
 		},
 		{
 			"success #2",
@@ -106,7 +106,7 @@ func TestConfigToGenerateConfig(t *testing.T) {
 					},
 				},
 			},
-			[]httpway.GenerateConfigHandler{
+			[]pipehub.GenerateConfigHandler{
 				{
 					Path:    "path1",
 					Version: "version1",
@@ -133,7 +133,7 @@ func TestConfigToClientConfig(t *testing.T) {
 	tests := []struct {
 		name     string
 		config   config
-		expected httpway.ClientConfig
+		expected pipehub.ClientConfig
 	}{
 		{
 			"success #1",
@@ -141,9 +141,9 @@ func TestConfigToClientConfig(t *testing.T) {
 				Host:   []configHost{},
 				Server: []configServer{},
 			},
-			httpway.ClientConfig{
-				Host:   []httpway.ClientConfigHost{},
-				Server: httpway.ClientConfigServer{},
+			pipehub.ClientConfig{
+				Host:   []pipehub.ClientConfigHost{},
+				Server: pipehub.ClientConfigServer{},
 			},
 		},
 		{
@@ -177,8 +177,8 @@ func TestConfigToClientConfig(t *testing.T) {
 					},
 				},
 			},
-			httpway.ClientConfig{
-				Host: []httpway.ClientConfigHost{
+			pipehub.ClientConfig{
+				Host: []pipehub.ClientConfigHost{
 					{
 						Endpoint: "endpoint1",
 						Handler:  "handler1",
@@ -190,11 +190,11 @@ func TestConfigToClientConfig(t *testing.T) {
 						Origin:   "origin2",
 					},
 				},
-				Server: httpway.ClientConfigServer{
-					HTTP: httpway.ClientConfigServerHTTP{
+				Server: pipehub.ClientConfigServer{
+					HTTP: pipehub.ClientConfigServerHTTP{
 						Port: 80,
 					},
-					Action: httpway.ClientConfigServerAction{
+					Action: pipehub.ClientConfigServerAction{
 						NotFound: "notFound",
 						Panic:    "panic",
 					},
@@ -282,7 +282,7 @@ func TestLoadConfig(t *testing.T) {
 				},
 				Handler: []configHandler{
 					{
-						Path:    "github.com/httpway/handler",
+						Path:    "github.com/pipehub/handler",
 						Version: "v0.5.1",
 						Alias:   "base",
 					},

@@ -1,6 +1,6 @@
 // +build !handler
 
-package httpway
+package pipehub
 
 func fetchHandlers() ([]handler, error) {
 	return nil, nil

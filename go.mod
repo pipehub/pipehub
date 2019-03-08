@@ -1,4 +1,4 @@
-module github.com/httpway/httpway
+module github.com/pipehub/pipehub
 
 require (
 	github.com/go-chi/chi v4.0.2+incompatible
