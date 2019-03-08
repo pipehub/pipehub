@@ -1,4 +1,4 @@
-image: registry.gitlab.com/httpway/httpway/ci:1
+image: registry.gitlab.com/pipehub/pipehub/ci:1
 
 stages:
   - quality

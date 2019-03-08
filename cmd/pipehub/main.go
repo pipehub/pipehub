@@ -8,16 +8,16 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
-	"github.com/httpway/httpway"
+	"github.com/pipehub/pipehub"
 )
 
 var done = make(chan os.Signal, 1)
 
 func main() {
-	var rootCmd = &cobra.Command{Use: "httpway"}
+	var rootCmd = &cobra.Command{Use: "pipehub"}
 	rootCmd.AddCommand(cmdStart(), cmdGenerate())
 	if err := rootCmd.Execute(); err != nil {
-		err = errors.Wrap(err, "httpway cli initialization error")
+		err = errors.Wrap(err, "pipehub cli initialization error")
 		fatal(err)
 	}
 }
@@ -30,7 +30,7 @@ func cmdStart() *cobra.Command {
 		Long:  `Start the application server.`,
 		Run:   cmdStartRun(&configPath),
 	}
-	cmd.Flags().StringVarP(&configPath, "config", "c", "./httpway.hcl", "config file path")
+	cmd.Flags().StringVarP(&configPath, "config", "c", "./pipehub.hcl", "config file path")
 	return &cmd
 }
 
@@ -51,14 +51,14 @@ func cmdStartRun(configPath *string) func(*cobra.Command, []string) {
 		ctxShutdown, ctxShutdownCancel := rawCfg.ctxShutdown()
 		defer ctxShutdownCancel()
 
-		c, err := httpway.NewClient(cfg)
+		c, err := pipehub.NewClient(cfg)
 		if err != nil {
-			err = errors.Wrap(err, "httpway new client error")
+			err = errors.Wrap(err, "pipehub new client error")
 			fatal(err)
 		}
 
 		if err := c.Start(); err != nil {
-			err = errors.Wrap(err, "httpway start error")
+			err = errors.Wrap(err, "pipehub start error")
 			fatal(err)
 		}
 
@@ -66,15 +66,15 @@ func cmdStartRun(configPath *string) func(*cobra.Command, []string) {
 
 		go func() {
 			<-ctxShutdown.Done()
-			fmt.Println("httpway did not gracefuly stopped")
+			fmt.Println("pipehub did not gracefuly stopped")
 			os.Exit(1)
 		}()
 
 		if err := c.Stop(ctxShutdown); err != nil {
-			err = errors.Wrap(err, "httpway stop error")
+			err = errors.Wrap(err, "pipehub stop error")
 			fatal(err)
 		}
-		fmt.Println("httpway stopped")
+		fmt.Println("pipehub stopped")
 	}
 }
 
@@ -87,7 +87,7 @@ func cmdGenerate() *cobra.Command {
 	handlers defined at the configuration file.`,
 		Run: cmdGenerateRun(&configPath, &workspacePath),
 	}
-	cmd.Flags().StringVarP(&configPath, "config", "c", "./httpway.hcl", "config file path")
+	cmd.Flags().StringVarP(&configPath, "config", "c", "./pipehub.hcl", "config file path")
 	cmd.Flags().StringVarP(&workspacePath, "workspace", "w", "", "workspace path")
 	return &cmd
 }
@@ -104,14 +104,14 @@ func cmdGenerateRun(configPath, workspacePath *string) func(*cobra.Command, []st
 		fs := afero.NewBasePathFs(afero.NewOsFs(), *workspacePath)
 		cfg.Filesystem = fs
 
-		g, err := httpway.NewGenerate(cfg)
+		g, err := pipehub.NewGenerate(cfg)
 		if err != nil {
-			err = errors.Wrap(err, "httpway generate initialization error")
+			err = errors.Wrap(err, "pipehub generate initialization error")
 			fatal(err)
 		}
 
 		if err = g.Do(); err != nil {
-			err = errors.Wrap(err, "httpway generate execute error")
+			err = errors.Wrap(err, "pipehub generate execute error")
 			fatal(err)
 		}
 	}

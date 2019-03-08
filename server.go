@@ -1,4 +1,4 @@
-package httpway
+package pipehub
 
 import (
 	"context"

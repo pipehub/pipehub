@@ -1,4 +1,4 @@
-build:httpway:
+build:pipehub:
   stage: build
   script:
-    - go build -mod readonly -o bin/httpway/httpway cmd/httpway/*.go
+    - go build -mod readonly -o bin/pipehub/pipehub cmd/pipehub/*.go

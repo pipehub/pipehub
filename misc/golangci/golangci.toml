@@ -31,7 +31,7 @@ enable      = [
   check-blank = true
 
   [linters-settings.goimports]
-  local-prefixes = "github.com/httpway/httpway"
+  local-prefixes = "github.com/pipehub/pipehub"
 
   [linters-settings.gocritic]
   enabled-tags = [

@@ -13,7 +13,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 
-	"github.com/httpway/httpway"
+	"github.com/pipehub/pipehub"
 )
 
 type config struct {
@@ -35,10 +35,10 @@ func (c config) valid() error {
 	return nil
 }
 
-func (c config) toGenerateConfig() httpway.GenerateConfig {
-	var cfg httpway.GenerateConfig
+func (c config) toGenerateConfig() pipehub.GenerateConfig {
+	var cfg pipehub.GenerateConfig
 	for _, handler := range c.Handler {
-		cfg.Handler = append(cfg.Handler, httpway.GenerateConfigHandler{
+		cfg.Handler = append(cfg.Handler, pipehub.GenerateConfigHandler{
 			Alias:   handler.Alias,
 			Path:    handler.Path,
 			Version: handler.Version,
@@ -47,14 +47,14 @@ func (c config) toGenerateConfig() httpway.GenerateConfig {
 	return cfg
 }
 
-func (c config) toClientConfig() httpway.ClientConfig {
-	cfg := httpway.ClientConfig{
+func (c config) toClientConfig() pipehub.ClientConfig {
+	cfg := pipehub.ClientConfig{
 		AsyncErrHandler: asyncErrHandler,
-		Host:            make([]httpway.ClientConfigHost, 0, len(c.Host)),
+		Host:            make([]pipehub.ClientConfigHost, 0, len(c.Host)),
 	}
 
 	for _, host := range c.Host {
-		cfg.Host = append(cfg.Host, httpway.ClientConfigHost{
+		cfg.Host = append(cfg.Host, pipehub.ClientConfigHost{
 			Endpoint: host.Endpoint,
 			Origin:   host.Origin,
 			Handler:  host.Handler,
@@ -68,7 +68,7 @@ func (c config) toClientConfig() httpway.ClientConfig {
 		}
 
 		if len(c.Server[0].HTTP) > 0 {
-			cfg.Server.HTTP = httpway.ClientConfigServerHTTP{
+			cfg.Server.HTTP = pipehub.ClientConfigServerHTTP{
 				Port: c.Server[0].HTTP[0].Port,
 			}
 		}

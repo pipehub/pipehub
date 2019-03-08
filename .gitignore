@@ -1,11 +1,11 @@
 # bin
-/cmd/httpway/main
-/cmd/httpway/httpway
+/cmd/pipehub/main
+/cmd/pipehub/pipehub
 
 # temporary files
 /bin
 /test.cover
-/cmd/httpway/httpway.hcl
+/cmd/pipehub/pipehub.hcl
 
 # generated files
 /go.mod.backup

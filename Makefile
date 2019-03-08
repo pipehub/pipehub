@@ -1,7 +1,7 @@
-PROJECT_PATH       = /opt/httpway
-DOCKER_CI_IMAGE    = registry.gitlab.com/httpway/httpway/ci
+PROJECT_PATH       = /opt/pipehub
+DOCKER_CI_IMAGE    = registry.gitlab.com/pipehub/pipehub/ci
 DOCKER_CI_VERSION  = 1
-CONFIG_PATH       ?= $(CURDIR)/cmd/httpway/httpway.hcl
+CONFIG_PATH       ?= $(CURDIR)/cmd/pipehub/pipehub.hcl
 WORKSPACE_PATH     = $(CURDIR)
 
 configure:
@@ -10,12 +10,12 @@ configure:
 	@git config branch.master.mergeoptions "--ff-only"
 
 build:
-	@go build -tags "$(TAGS)" -o cmd/httpway/httpway cmd/httpway/*.go
+	@go build -tags "$(TAGS)" -o cmd/pipehub/pipehub cmd/pipehub/*.go
 
 generate:
 	@rm -f handler_dynamic.go
 	@make build
-	@./cmd/httpway/httpway generate -c $(CONFIG_PATH) -w $(WORKSPACE_PATH)
+	@./cmd/pipehub/pipehub generate -c $(CONFIG_PATH) -w $(WORKSPACE_PATH)
 	@TAGS=handler make build
 
 pre-pr: go-test go-linter go-linter-vendor docker-linter
