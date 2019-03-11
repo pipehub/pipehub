@@ -1,0 +1,64 @@
+project_name: pipehub
+
+before:
+  hooks:
+    - cp cmd/pipehub/pipehub.sample.hcl .
+
+builds:
+  - main: ./cmd/pipehub
+    binary: pipehub
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+
+archive:
+  name_template: '{{ .ProjectName }}_v{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+  wrap_in_directory: true
+  format: tar.gz
+  files:
+    - readme.md
+    - pipehub.sample.hcl
+    - changelog.md
+    - license
+
+checksum:
+  name_template: '{{ .ProjectName }}_checksum.txt'
+  algorithm: sha256
+
+changelog:
+  skip: true
+
+release:
+  draft: true
+  prerelease: true
+  name_template: '{{.Tag}}'
+  github:
+    owner: pipehub
+    name: pipehub
+
+sign:
+  artifacts: checksum
+  signature: '${artifact}.sig'
+  cmd: gpg
+  args:
+    [
+      '-u',
+      '7A50206BC39EE20B0896A95458DF3B8969B9A26D',
+      '--output',
+      '${signature}',
+      '--detach-sign',
+      '${artifact}',
+    ]
+
+dockers:
+  - goos: linux
+    goarch: amd64
+    dockerfile: misc/docker/build/Dockerfile
+    image_templates:
+      - 'pipehub/build:{{ .Env.PIPEHUB_DOCKER_IMAGE_VERSION }}'
+    build_flag_templates:
+      - '--build-arg=TAG={{ .Tag }}'
+    extra_files:
+      - misc/docker/build/entrypoint.sh
