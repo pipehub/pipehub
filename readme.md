@@ -1,5 +1,5 @@
 # Pipehub
-A programmable proxy server.  
+A programmable proxy server.
 Please, don't use it in production **yet**! It's nowhere near stable and changing too much.
 
 ## Why?
@@ -48,6 +48,18 @@ make generate
 ```
 
 Execute it:
-```
+```bash
 ./cmd/pipehub/pipehub start -c ./cmd/pipehub/pipehub.hcl
 ```
+
+It's also possible to build from a docker image, just need to pass the config and a directory where the binary gonna be writed:
+```bash
+docker run --rm -v $(pwd)/pipehub.hcl:/pipehub.hcl -v $(pwd):/pipehub/output pipehub/build:0.1.0
+```
+
+By default, it generates a linux amd64 based binary, but this can be changed with this arguments:
+```bash
+docker run --rm -e GOOS=darwin -e GOARCH=amd64 -v $(pwd)/pipehub.hcl:/pipehub.hcl -v $(pwd):/pipehub/output pipehub/build:0.1.0
+```
+
+All the possible `GOOS` and `GOARCH` can be found [here](https://golang.org/doc/install/source#environment).

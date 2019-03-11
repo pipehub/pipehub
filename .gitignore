@@ -6,6 +6,8 @@
 /bin
 /test.cover
 /cmd/pipehub/pipehub.hcl
+/dist
+/pipehub.sample.hcl
 
 # generated files
 /go.mod.backup

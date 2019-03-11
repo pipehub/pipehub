@@ -3,20 +3,24 @@ DOCKER_CI_IMAGE    = registry.gitlab.com/pipehub/pipehub/ci
 DOCKER_CI_VERSION  = 1
 CONFIG_PATH       ?= $(CURDIR)/cmd/pipehub/pipehub.hcl
 WORKSPACE_PATH     = $(CURDIR)
+RAWTAG             = $(shell git tag --points-at | head -n1 | cut -c2-)
 
 configure:
 	@git config pull.rebase true
 	@git config remote.origin.prune true
 	@git config branch.master.mergeoptions "--ff-only"
 
+release:
+	@PIPEHUB_DOCKER_IMAGE_VERSION=$(RAWTAG) goreleaser release --rm-dist
+
 build:
 	@go build -tags "$(TAGS)" -o cmd/pipehub/pipehub cmd/pipehub/*.go
 
 generate:
 	@rm -f handler_dynamic.go
-	@make build
+	@GOOS="" GOARCH="" make build
 	@./cmd/pipehub/pipehub generate -c $(CONFIG_PATH) -w $(WORKSPACE_PATH)
-	@TAGS=handler make build
+	@GOOS=${GOOS} GOARCH=${GOARCH} TAGS=handler make build
 
 pre-pr: go-test go-linter go-linter-vendor docker-linter
 
