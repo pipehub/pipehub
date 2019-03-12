@@ -24,7 +24,7 @@ archive:
     - license
 
 checksum:
-  name_template: '{{ .ProjectName }}_checksum.txt'
+  name_template: 'checksum'
   algorithm: sha256
 
 changelog:
