@@ -17,9 +17,9 @@ import (
 )
 
 type config struct {
-	Host    []configHost    `hcl:"host" mapstructure:"host"`
-	Handler []configHandler `hcl:"handler" mapstructure:"handler"`
-	Server  []configServer  `hcl:"server" mapstructure:"server"`
+	Host    []configHost    `mapstructure:"host"`
+	Handler []configHandler `mapstructure:"handler"`
+	Server  []configServer  `mapstructure:"server"`
 }
 
 func (c config) valid() error {
@@ -92,21 +92,21 @@ func (c config) ctxShutdown() (ctx context.Context, ctxCancel func()) {
 }
 
 type configHandler struct {
-	Path    string `hcl:"path" mapstructure:"path"`
-	Version string `hcl:"version" mapstructure:"version"`
-	Alias   string `hcl:"alias" mapstructure:"alias"`
+	Path    string `mapstructure:"path"`
+	Version string `mapstructure:"version"`
+	Alias   string `mapstructure:"alias"`
 }
 
 type configHost struct {
-	Endpoint string `hcl:"endpoint" mapstructure:"endpoint"`
-	Origin   string `hcl:"origin" mapstructure:"origin"`
-	Handler  string `hcl:"handler" mapstructure:"handler"`
+	Endpoint string `mapstructure:"endpoint"`
+	Origin   string `mapstructure:"origin"`
+	Handler  string `mapstructure:"handler"`
 }
 
 type configServer struct {
-	GracefulShutdown string               `hcl:"graceful-shutdown" mapstructure:"graceful-shutdown"`
-	HTTP             []configServerHTTP   `hcl:"http" mapstructure:"http"`
-	Action           []configServerAction `hcl:"action" mapstructure:"action"`
+	GracefulShutdown string               `mapstructure:"graceful-shutdown"`
+	HTTP             []configServerHTTP   `mapstructure:"http"`
+	Action           []configServerAction `mapstructure:"action"`
 }
 
 func (c configServer) valid() error {
@@ -121,12 +121,12 @@ func (c configServer) valid() error {
 }
 
 type configServerHTTP struct {
-	Port int `hcl:"port" mapstructure:"port"`
+	Port int `mapstructure:"port"`
 }
 
 type configServerAction struct {
-	NotFound string `hcl:"not-found" mapstructure:"not-found"`
-	Panic    string `hcl:"panic" mapstructure:"panic"`
+	NotFound string `mapstructure:"not-found"`
+	Panic    string `mapstructure:"panic"`
 }
 
 func loadConfig(path string) (config, error) {
