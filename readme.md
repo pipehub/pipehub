@@ -1,4 +1,6 @@
 # Pipehub
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fpipehub%2Fpipehub.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fpipehub%2Fpipehub?ref=badge_shield)
+
 A programmable proxy server.
 Please, don't use it in production **yet**! It's nowhere near stable and changing too much.
 
@@ -63,3 +65,6 @@ docker run --rm -e GOOS=darwin -e GOARCH=amd64 -v $(pwd)/pipehub.hcl:/pipehub.hc
 ```
 
 All the possible `GOOS` and `GOARCH` can be found [here](https://golang.org/doc/install/source#environment).
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fpipehub%2Fpipehub.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fpipehub%2Fpipehub?ref=badge_large)
