@@ -11,10 +11,10 @@ import (
 )
 
 type generateTemplateContent struct {
-	Handler []generateTemplateContentHandler
+	Pipe []generateTemplateContentPipe
 }
 
-type generateTemplateContentHandler struct {
+type generateTemplateContentPipe struct {
 	Path      string
 	PathAlias string // Alias extracted from the path.
 	Alias     string // Overwrite the above path alias value.
@@ -24,37 +24,37 @@ type generateTemplateContentHandler struct {
 // GenerateConfig has all the information needed to execute the generate.
 type GenerateConfig struct {
 	Filesystem afero.Fs
-	Handler    []GenerateConfigHandler
+	Pipe       []GenerateConfigPipe
 }
 
 func (cfg GenerateConfig) toGenerateTemplateContent() generateTemplateContent {
-	handler := make([]generateTemplateContentHandler, 0, len(cfg.Handler))
-	for _, h := range cfg.Handler {
-		pathFragments := strings.Split(h.Path, "/")
-		handler = append(handler, generateTemplateContentHandler{
-			Path:      h.Path,
+	pipes := make([]generateTemplateContentPipe, 0, len(cfg.Pipe))
+	for _, p := range cfg.Pipe {
+		pathFragments := strings.Split(p.Path, "/")
+		pipes = append(pipes, generateTemplateContentPipe{
+			Path:      p.Path,
 			PathAlias: pathFragments[len(pathFragments)-1],
-			Alias:     h.Alias,
-			Revision:  h.Version,
+			Alias:     p.Alias,
+			Revision:  p.Version,
 		})
 	}
 	return generateTemplateContent{
-		Handler: handler,
+		Pipe: pipes,
 	}
 }
 
-// GenerateConfigHandler has the information needed to represent a handler.
-type GenerateConfigHandler struct {
+// GenerateConfigPipe has the information needed to represent a pipe.
+type GenerateConfigPipe struct {
 	Path    string
 	Version string
 	Alias   string
 }
 
-// Generate the dynamic files to include custom handlers at the final build.
+// Generate the dynamic files to include custom pipes at the final build.
 type Generate struct {
-	cfg                GenerateConfig
-	goModTmpl          template.Template
-	handlerDynamicTmpl template.Template
+	cfg             GenerateConfig
+	goModTmpl       template.Template
+	pipeDynamicTmpl template.Template
 }
 
 // Do dynamic generate the required files from the configuration file.
@@ -63,8 +63,8 @@ func (g *Generate) Do() error {
 	if err := g.doGoMod(content); err != nil {
 		return errors.Wrap(err, "go mod generation error")
 	}
-	if err := g.doHandlerDynamic(content); err != nil {
-		return errors.Wrap(err, "handler dynamic generation error")
+	if err := g.doPipeDynamic(content); err != nil {
+		return errors.Wrap(err, "pipe dynamic generation error")
 	}
 	return nil
 }
@@ -76,11 +76,11 @@ func (g *Generate) init() error {
 	}
 	g.goModTmpl = *goModTmpl
 
-	handlerDynamicTmpl, err := g.parseTemplate("template/handler_dynamic.go.tmpl")
+	pipeDynamicTmpl, err := g.parseTemplate("template/pipe_dynamic.go.tmpl")
 	if err != nil {
 		return err
 	}
-	g.handlerDynamicTmpl = *handlerDynamicTmpl
+	g.pipeDynamicTmpl = *pipeDynamicTmpl
 
 	return nil
 }
@@ -153,8 +153,8 @@ func (g *Generate) doGoMod(content generateTemplateContent) error {
 	return nil
 }
 
-func (g *Generate) doHandlerDynamic(content generateTemplateContent) error {
-	path := "handler_dynamic.go"
+func (g *Generate) doPipeDynamic(content generateTemplateContent) error {
+	path := "pipe_dynamic.go"
 	err := g.cfg.Filesystem.Remove(path)
 	if err != nil && os.IsExist(err) {
 		return errors.Wrapf(err, "remove file '%s' error ", path)
@@ -166,7 +166,7 @@ func (g *Generate) doHandlerDynamic(content generateTemplateContent) error {
 	}
 	defer nf.Close() // nolint: errcheck
 
-	err = g.handlerDynamicTmpl.Execute(nf, content)
+	err = g.pipeDynamicTmpl.Execute(nf, content)
 	return errors.Wrap(err, "template execution error")
 }
 

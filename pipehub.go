@@ -5,18 +5,18 @@ import (
 	"net/http"
 )
 
-type handlerInstance interface {
+type pipeInstance interface {
 	Close(ctx context.Context) error
 }
 
-type handler struct {
+type pipe struct {
 	name     string
 	endpoint string
-	instance handlerInstance
+	instance pipeInstance
 	alias    string
 	fn       func(http.Handler) http.Handler
 }
 
-func (h handler) valid() bool {
-	return h.instance != nil
+func (p pipe) valid() bool {
+	return p.instance != nil
 }

@@ -82,9 +82,9 @@ func cmdGenerate() *cobra.Command {
 	var configPath, workspacePath string
 	cmd := cobra.Command{
 		Use:   "generate",
-		Short: "Generate the required code to use the custom handlers",
+		Short: "Generate the required code to use the custom pipes",
 		Long: `generate is used to create the code to use the custom
-	handlers defined at the configuration file.`,
+	pipes defined at the configuration file.`,
 		Run: cmdGenerateRun(&configPath, &workspacePath),
 	}
 	cmd.Flags().StringVarP(&configPath, "config", "c", "./pipehub.hcl", "config file path")

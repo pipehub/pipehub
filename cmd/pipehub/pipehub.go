@@ -17,9 +17,9 @@ import (
 )
 
 type config struct {
-	Host    []configHost    `mapstructure:"host"`
-	Handler []configHandler `mapstructure:"handler"`
-	Server  []configServer  `mapstructure:"server"`
+	Host   []configHost   `mapstructure:"host"`
+	Pipe   []configPipe   `mapstructure:"pipe"`
+	Server []configServer `mapstructure:"server"`
 }
 
 func (c config) valid() error {
@@ -37,11 +37,11 @@ func (c config) valid() error {
 
 func (c config) toGenerateConfig() pipehub.GenerateConfig {
 	var cfg pipehub.GenerateConfig
-	for _, handler := range c.Handler {
-		cfg.Handler = append(cfg.Handler, pipehub.GenerateConfigHandler{
-			Alias:   handler.Alias,
-			Path:    handler.Path,
-			Version: handler.Version,
+	for _, pipe := range c.Pipe {
+		cfg.Pipe = append(cfg.Pipe, pipehub.GenerateConfigPipe{
+			Alias:   pipe.Alias,
+			Path:    pipe.Path,
+			Version: pipe.Version,
 		})
 	}
 	return cfg
@@ -91,7 +91,7 @@ func (c config) ctxShutdown() (ctx context.Context, ctxCancel func()) {
 	return context.WithTimeout(context.Background(), duration)
 }
 
-type configHandler struct {
+type configPipe struct {
 	Path    string `mapstructure:"path"`
 	Version string `mapstructure:"version"`
 	Alias   string `mapstructure:"alias"`
@@ -146,7 +146,73 @@ func loadConfig(path string) (config, error) {
 	if err := mapstructure.Decode(rawCfg, &cfg); err != nil {
 		return config{}, errors.Wrap(err, "unmarshal error")
 	}
+
+	cfg.Pipe, err = loadConfigPipe(rawCfg["pipe"])
+	if err != nil {
+		return config{}, errors.Wrap(err, "unmarshal pipe config error")
+	}
+
 	return cfg, nil
+}
+
+// loadConfigPipe expect to receive a interface with this format:
+//
+//	[]map[string]interface {}{
+//		{
+//				"github.com/pipehub/pipe": []map[string]interface {}{
+//						{
+//								"version": "v0.7.0",
+//								"alias":   "pipe",
+//						},
+//				},
+//		},
+//	}
+func loadConfigPipe(raw interface{}) ([]configPipe, error) {
+	var result []configPipe
+
+	if raw == nil {
+		return nil, nil
+	}
+
+	rawSliceMap, ok := raw.([]map[string]interface{})
+	if !ok {
+		return nil, errors.New("can't type assertion value into []map[string]interface{} on the first assignment")
+	}
+
+	for _, rawMap := range rawSliceMap {
+		for key, rawMapEntry := range rawMap {
+			rawSliceMapInner, ok := rawMapEntry.([]map[string]interface{})
+			if !ok {
+				return nil, errors.New("can't type assertion value into []map[string]interface{} on the second assignment")
+			}
+
+			for _, rawSliceMapInnerEntry := range rawSliceMapInner {
+				ch := configPipe{
+					Path: key,
+				}
+
+				for innerKey, innerEntry := range rawSliceMapInnerEntry {
+					value, ok := innerEntry.(string)
+					if !ok {
+						return nil, errors.New("can't type assertion value into string")
+					}
+
+					switch innerKey {
+					case "version":
+						ch.Version = value
+					case "alias":
+						ch.Alias = value
+					default:
+						return nil, fmt.Errorf("unknow pipe key '%s'", innerKey)
+					}
+				}
+
+				result = append(result, ch)
+			}
+		}
+	}
+
+	return result, nil
 }
 
 func fatal(err error) {

@@ -47,7 +47,7 @@ func (c *ClientConfigServerHTTP) setDefaultValues() {
 	}
 }
 
-// ClientConfigHost holds the configuration to direct the request from hosts to handlers.
+// ClientConfigHost holds the configuration to direct the request from hosts to pipes.
 type ClientConfigHost struct {
 	Endpoint string
 	Origin   string
@@ -56,9 +56,9 @@ type ClientConfigHost struct {
 
 // Client is pipehub entrypoint.
 type Client struct {
-	cfg            ClientConfig
-	server         *server
-	handlerManager *handlerManager
+	cfg         ClientConfig
+	server      *server
+	pipeManager *pipeManager
 }
 
 // Start pipehub.
@@ -75,8 +75,8 @@ func (c *Client) Stop(ctx context.Context) error {
 		return errors.Wrap(err, "server stop error")
 	}
 
-	if err := c.handlerManager.close(ctx); err != nil {
-		return errors.Wrap(err, "handler manager close error")
+	if err := c.pipeManager.close(ctx); err != nil {
+		return errors.Wrap(err, "pipe manager close error")
 	}
 	return nil
 }
@@ -89,9 +89,9 @@ func (c *Client) init(cfg ClientConfig) error {
 	}
 
 	var err error
-	c.handlerManager, err = newHandlerManager(c)
+	c.pipeManager, err = newPipeManager(c)
 	if err != nil {
-		return errors.Wrap(err, "handler manager new instance error")
+		return errors.Wrap(err, "pipe manager new instance error")
 	}
 	c.server = newServer(c)
 	return nil

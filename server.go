@@ -26,22 +26,22 @@ func (s *server) init() {
 func (s *server) start() error {
 	r := chi.NewRouter()
 
-	if s.client.handlerManager.action.notFound != nil {
-		r.NotFound(s.client.handlerManager.action.notFound)
+	if s.client.pipeManager.action.notFound != nil {
+		r.NotFound(s.client.pipeManager.action.notFound)
 	}
 
-	if s.client.handlerManager.action.panik != nil {
-		r.Use(s.client.handlerManager.action.panik)
+	if s.client.pipeManager.action.panik != nil {
+		r.Use(s.client.pipeManager.action.panik)
 	}
 
-	handlers, err := s.startHandlers()
+	pipes, err := s.startPipes()
 	if err != nil {
 		return errors.Wrap(err, "start handlers error")
 	}
 
 	hr := hostrouter.New()
-	for endpoint, handler := range handlers {
-		hr.Map(endpoint, handler)
+	for endpoint, pipe := range pipes {
+		hr.Map(endpoint, pipe)
 	}
 	r.Mount("/", hr)
 	s.base.Handler = r
@@ -55,21 +55,21 @@ func (s *server) start() error {
 	return nil
 }
 
-func (s *server) startHandlers() (map[string]*chi.Mux, error) {
-	handlers := make(map[string]*chi.Mux)
+func (s *server) startPipes() (map[string]*chi.Mux, error) {
+	pipes := make(map[string]*chi.Mux)
 	for _, host := range s.client.cfg.Host {
-		h, err := s.client.handlerManager.fetch(host.Handler)
+		p, err := s.client.pipeManager.fetch(host.Handler)
 		if err != nil {
-			return handlers, errors.Wrap(err, "fetch handler error")
+			return pipes, errors.Wrap(err, "fetch pipe error")
 		}
 
-		if !h.valid() {
+		if !p.valid() {
 			continue
 		}
 
 		origin, err := url.Parse(host.Origin)
 		if err != nil {
-			return handlers, errors.Wrapf(err, "parse url '%s' error", host.Origin)
+			return pipes, errors.Wrapf(err, "parse url '%s' error", host.Origin)
 		}
 
 		director := func(req *http.Request) {
@@ -80,14 +80,14 @@ func (s *server) startHandlers() (map[string]*chi.Mux, error) {
 		}
 		proxy := &httputil.ReverseProxy{Director: director}
 		r := chi.NewRouter()
-		if s.client.handlerManager.action.panik != nil {
-			r.Use(s.client.handlerManager.action.panik)
+		if s.client.pipeManager.action.panik != nil {
+			r.Use(s.client.pipeManager.action.panik)
 		}
-		r.Use(h.fn)
+		r.Use(p.fn)
 		r.Mount("/", http.HandlerFunc(proxy.ServeHTTP))
-		handlers[host.Endpoint] = r
+		pipes[host.Endpoint] = r
 	}
-	return handlers, nil
+	return pipes, nil
 }
 
 func (s *server) stop(ctx context.Context) error {

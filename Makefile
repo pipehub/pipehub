@@ -17,10 +17,10 @@ build:
 	@go build -tags "$(TAGS)" -o cmd/pipehub/pipehub cmd/pipehub/*.go
 
 generate:
-	@rm -f handler_dynamic.go
+	@rm -f pipe_dynamic.go
 	@GOOS="" GOARCH="" make build
 	@./cmd/pipehub/pipehub generate -c $(CONFIG_PATH) -w $(WORKSPACE_PATH)
-	@GOOS=${GOOS} GOARCH=${GOARCH} TAGS=handler make build
+	@GOOS=${GOOS} GOARCH=${GOARCH} TAGS=pipe make build
 
 pre-pr: go-test go-linter go-linter-vendor docker-linter
 

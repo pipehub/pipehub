@@ -17,8 +17,7 @@ host {
   handler  = "base.Default"
 }
 
-handler {
-  path    = "github.com/pipehub/handler"
-  version = "v0.6.0"
+pipe "github.com/pipehub/sample" {
+  version = "v0.7.0"
   alias   = "base"
 }
