@@ -1,4 +1,4 @@
-# Pipehub
+# PipeHub
 A programmable proxy server.
 Please, don't use it in production **yet**! It's nowhere near stable and changing too much.
 
