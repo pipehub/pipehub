@@ -11,7 +11,7 @@
 
 # generated files
 /go.mod.backup
-/handler_dynamic.go
+/pipe_dynamic.go
 
 # editor
 /.vscode

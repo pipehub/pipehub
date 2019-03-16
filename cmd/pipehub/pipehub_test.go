@@ -83,17 +83,17 @@ func TestConfigToGenerateConfig(t *testing.T) {
 	tests := []struct {
 		name     string
 		config   config
-		expected []pipehub.GenerateConfigHandler
+		expected []pipehub.GenerateConfigPipe
 	}{
 		{
 			"success #1",
 			config{},
-			[]pipehub.GenerateConfigHandler{},
+			[]pipehub.GenerateConfigPipe{},
 		},
 		{
 			"success #2",
 			config{
-				Handler: []configHandler{
+				Pipe: []configPipe{
 					{
 						Path:    "path1",
 						Version: "version1",
@@ -106,7 +106,7 @@ func TestConfigToGenerateConfig(t *testing.T) {
 					},
 				},
 			},
-			[]pipehub.GenerateConfigHandler{
+			[]pipehub.GenerateConfigPipe{
 				{
 					Path:    "path1",
 					Version: "version1",
@@ -123,7 +123,7 @@ func TestConfigToGenerateConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			actual := tt.config.toGenerateConfig().Handler
+			actual := tt.config.toGenerateConfig().Pipe
 			require.ElementsMatch(t, tt.expected, actual)
 		})
 	}
@@ -280,10 +280,10 @@ func TestLoadConfig(t *testing.T) {
 						Handler:  "base.Default",
 					},
 				},
-				Handler: []configHandler{
+				Pipe: []configPipe{
 					{
 						Path:    "github.com/pipehub/handler",
-						Version: "v0.5.1",
+						Version: "v0.7.0",
 						Alias:   "base",
 					},
 				},
