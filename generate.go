@@ -3,6 +3,7 @@ package pipehub
 import (
 	"io/ioutil"
 	"os"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -21,6 +22,24 @@ type generateTemplateContentPipe struct {
 	Revision  string
 }
 
+type generateTemplateContentPipeSlice []generateTemplateContentPipe
+
+func (ps generateTemplateContentPipeSlice) Len() int {
+	return len(ps)
+}
+
+func (ps generateTemplateContentPipeSlice) Swap(i, j int) {
+	ps[i], ps[j] = ps[j], ps[i]
+}
+
+func (ps generateTemplateContentPipeSlice) Less(i, j int) bool {
+	paths := []string{
+		ps[i].Path,
+		ps[j].Path,
+	}
+	return sort.StringsAreSorted(paths)
+}
+
 // GenerateConfig has all the information needed to execute the generate.
 type GenerateConfig struct {
 	Filesystem afero.Fs
@@ -28,7 +47,7 @@ type GenerateConfig struct {
 }
 
 func (cfg GenerateConfig) toGenerateTemplateContent() generateTemplateContent {
-	pipes := make([]generateTemplateContentPipe, 0, len(cfg.Pipe))
+	pipes := make(generateTemplateContentPipeSlice, 0, len(cfg.Pipe))
 	for _, p := range cfg.Pipe {
 		pathFragments := strings.Split(p.Path, "/")
 		pipes = append(pipes, generateTemplateContentPipe{
@@ -38,6 +57,7 @@ func (cfg GenerateConfig) toGenerateTemplateContent() generateTemplateContent {
 			Revision:  p.Version,
 		})
 	}
+	sort.Sort(pipes)
 	return generateTemplateContent{
 		Pipe: pipes,
 	}
