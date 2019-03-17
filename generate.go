@@ -12,7 +12,8 @@ import (
 )
 
 type generateTemplateContent struct {
-	Pipe []generateTemplateContentPipe
+	Pipe                []generateTemplateContentPipe
+	PipeWithModuleCount int
 }
 
 type generateTemplateContentPipe struct {
@@ -20,6 +21,7 @@ type generateTemplateContentPipe struct {
 	PathAlias string // Alias extracted from the path.
 	Alias     string // Overwrite the above path alias value.
 	Revision  string
+	Module    string
 }
 
 type generateTemplateContentPipeSlice []generateTemplateContentPipe
@@ -33,10 +35,16 @@ func (ps generateTemplateContentPipeSlice) Swap(i, j int) {
 }
 
 func (ps generateTemplateContentPipeSlice) Less(i, j int) bool {
-	paths := []string{
-		ps[i].Path,
-		ps[j].Path,
+	paths := make([]string, 0, 2)
+	add := func(index int) {
+		if ps[index].Module != "" {
+			paths = append(paths, ps[index].Module)
+		} else {
+			paths = append(paths, ps[index].Path)
+		}
 	}
+	add(i)
+	add(j)
 	return sort.StringsAreSorted(paths)
 }
 
@@ -48,6 +56,7 @@ type GenerateConfig struct {
 
 func (cfg GenerateConfig) toGenerateTemplateContent() generateTemplateContent {
 	pipes := make(generateTemplateContentPipeSlice, 0, len(cfg.Pipe))
+	var moduleCount int
 	for _, p := range cfg.Pipe {
 		pathFragments := strings.Split(p.Path, "/")
 		pipes = append(pipes, generateTemplateContentPipe{
@@ -55,17 +64,23 @@ func (cfg GenerateConfig) toGenerateTemplateContent() generateTemplateContent {
 			PathAlias: pathFragments[len(pathFragments)-1],
 			Alias:     p.Alias,
 			Revision:  p.Version,
+			Module:    p.Module,
 		})
+		if p.Module != "" {
+			moduleCount++
+		}
 	}
 	sort.Sort(pipes)
 	return generateTemplateContent{
-		Pipe: pipes,
+		Pipe:                pipes,
+		PipeWithModuleCount: moduleCount,
 	}
 }
 
 // GenerateConfigPipe has the information needed to represent a pipe.
 type GenerateConfigPipe struct {
 	Path    string
+	Module  string
 	Version string
 	Alias   string
 }
@@ -158,7 +173,7 @@ func (g *Generate) doGoMod(content generateTemplateContent) error {
 	if _, err = nf.WriteString(payload); err != nil {
 		return errors.Wrap(err, "payload writer error")
 	}
-	if _, err = nf.WriteString("\r\n\n"); err != nil { // pular a linha aqui ou no template?
+	if _, err = nf.WriteString("\r\n"); err != nil {
 		return errors.Wrap(err, "carriage return and jump line write error")
 	}
 
