@@ -41,6 +41,7 @@ func (c config) toGenerateConfig() pipehub.GenerateConfig {
 		cfg.Pipe = append(cfg.Pipe, pipehub.GenerateConfigPipe{
 			Alias:   pipe.Alias,
 			Path:    pipe.Path,
+			Module:  pipe.Module,
 			Version: pipe.Version,
 		})
 	}
@@ -95,6 +96,7 @@ type configPipe struct {
 	Path    string `mapstructure:"path"`
 	Version string `mapstructure:"version"`
 	Alias   string `mapstructure:"alias"`
+	Module  string `mapstructure:"module"`
 }
 
 type configHost struct {
@@ -202,6 +204,8 @@ func loadConfigPipe(raw interface{}) ([]configPipe, error) {
 						ch.Version = value
 					case "alias":
 						ch.Alias = value
+					case "module":
+						ch.Module = value
 					default:
 						return nil, fmt.Errorf("unknow pipe key '%s'", innerKey)
 					}
