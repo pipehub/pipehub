@@ -10,7 +10,7 @@ import (
   {{- end }}
 )
 {{ end }}
-func fetchPipes() ([]pipe, error) {
+func (pipeManager) fetchPipes() ([]pipe, error) {
   {{- if gt (len .Pipe) 0 }}
   var pipes []pipe
   {{ range .Pipe }}

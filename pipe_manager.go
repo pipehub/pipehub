@@ -71,7 +71,7 @@ func (pm pipeManager) initGeneric(id string) (interface{}, pipe, error) {
 		return nil, pipe{}, nil
 	}
 
-	pipes, err := fetchPipes()
+	pipes, err := pm.fetchPipes()
 	if err != nil {
 		return nil, pipe{}, errors.Wrap(err, "fetch pipes error")
 	}

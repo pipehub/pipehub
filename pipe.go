@@ -2,6 +2,6 @@
 
 package pipehub
 
-func fetchPipes() ([]pipe, error) {
+func (pipeManager) fetchPipes() ([]pipe, error) {
 	return nil, nil
 }
