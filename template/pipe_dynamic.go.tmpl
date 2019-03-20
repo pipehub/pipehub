@@ -10,24 +10,19 @@ import (
   {{- end }}
 )
 {{ end }}
-func (pipeManager) fetchPipes() ([]pipe, error) {
-  {{- if gt (len .Pipe) 0 }}
-  var pipes []pipe
-  {{ range .Pipe }}
+func (pm *pipeManager) fetchPipes() error {
+  {{- range .Pipe }}
   {
     client, err := {{ .Alias }}.NewClient()
     if err != nil {
-      return nil, errors.Wrap(err, "'{{ if .Module }}{{ .Module }}{{ else }}{{ .Path }}{{ end }}' initialization error")
+      return errors.Wrap(err, "'{{ if .Module }}{{ .Module }}{{ else }}{{ .Path }}{{ end }}' initialization error")
     }
 
-    pipes = append(pipes, pipe {
+    pm.pipes = append(pm.pipes, pipe {
       instance: client,
       alias:    "{{ .Alias }}",
     })
   }
   {{ end }}
-  return pipes, nil
-  {{- else }}
-  return []pipes{}, nil
-  {{- end }}
+  return nil
 }
