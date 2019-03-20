@@ -20,6 +20,10 @@ type pipeManager struct {
 }
 
 func (pm *pipeManager) init() error {
+	if err := pm.fetchPipes(); err != nil {
+		return errors.Wrap(err, "fetch pipes error")
+	}
+
 	if err := pm.initAction(); err != nil {
 		return errors.Wrap(err, "init action error")
 	}
@@ -71,12 +75,7 @@ func (pm pipeManager) initGeneric(id string) (interface{}, pipe, error) {
 		return nil, pipe{}, nil
 	}
 
-	pipes, err := pm.fetchPipes()
-	if err != nil {
-		return nil, pipe{}, errors.Wrap(err, "fetch pipes error")
-	}
-
-	for _, rawPipe := range pipes {
+	for _, rawPipe := range pm.pipes {
 		if !strings.HasPrefix(id, rawPipe.alias+".") {
 			continue
 		}
