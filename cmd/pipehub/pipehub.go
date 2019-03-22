@@ -57,7 +57,6 @@ func (c config) toClientConfig() pipehub.ClientConfig {
 	for _, host := range c.Host {
 		cfg.Host = append(cfg.Host, pipehub.ClientConfigHost{
 			Endpoint: host.Endpoint,
-			Origin:   host.Origin,
 			Handler:  host.Handler,
 		})
 	}
@@ -101,7 +100,6 @@ type configPipe struct {
 
 type configHost struct {
 	Endpoint string `mapstructure:"endpoint"`
-	Origin   string `mapstructure:"origin"`
 	Handler  string `mapstructure:"handler"`
 }
 

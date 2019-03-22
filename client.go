@@ -50,7 +50,6 @@ func (c *ClientConfigServerHTTP) setDefaultValues() {
 // ClientConfigHost holds the configuration to direct the request from hosts to pipes.
 type ClientConfigHost struct {
 	Endpoint string
-	Origin   string
 	Handler  string
 }
 

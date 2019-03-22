@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httputil"
-	"net/url"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/hostrouter"
@@ -67,15 +66,7 @@ func (s *server) startPipes() (map[string]*chi.Mux, error) {
 			continue
 		}
 
-		origin, err := url.Parse(host.Origin)
-		if err != nil {
-			return pipes, errors.Wrapf(err, "parse url '%s' error", host.Origin)
-		}
-
 		director := func(req *http.Request) {
-			req.Host = origin.Host
-			req.URL.Host = origin.Host
-			req.URL.Scheme = origin.Scheme
 			req.Header.Set("X-Forwarded-Host", req.Header.Get("Host"))
 		}
 		proxy := &httputil.ReverseProxy{Director: director}

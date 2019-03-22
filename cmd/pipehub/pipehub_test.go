@@ -153,12 +153,10 @@ func TestConfigToClientConfig(t *testing.T) {
 					{
 						Endpoint: "endpoint1",
 						Handler:  "handler1",
-						Origin:   "origin1",
 					},
 					{
 						Endpoint: "endpoint2",
 						Handler:  "handler2",
-						Origin:   "origin2",
 					},
 				},
 				Server: []configServer{
@@ -182,12 +180,10 @@ func TestConfigToClientConfig(t *testing.T) {
 					{
 						Endpoint: "endpoint1",
 						Handler:  "handler1",
-						Origin:   "origin1",
 					},
 					{
 						Endpoint: "endpoint2",
 						Handler:  "handler2",
-						Origin:   "origin2",
 					},
 				},
 				Server: pipehub.ClientConfigServer{
@@ -276,7 +272,6 @@ func TestLoadConfig(t *testing.T) {
 				Host: []configHost{
 					{
 						Endpoint: "google",
-						Origin:   "https://www.google.com",
 						Handler:  "base.Default",
 					},
 				},

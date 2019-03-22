@@ -1,5 +1,5 @@
 # PipeHub
-A programmable proxy server.  
+A programmable proxy server.
 Please, don't use it in production **yet**! It's nowhere near stable and changing too much.
 
 ## Why?
@@ -20,7 +20,6 @@ server {
 
 host {
   endpoint = "google"
-  origin   = "https://www.google.com"
   handler  = "base.Default"
 }
 
@@ -30,7 +29,7 @@ pipe "github.com/pipehub/sample" {
 }
 ```
 
-The pipe points to the place where the Go code is, it should be a `go gettable` project. A pipe is a generic processor that can be used on multiple hosts. A host track the endpoint the proxy gonna listen, where the origin is, and which handler gonna be used to process the requests.
+The pipe points to the place where the Go code is, it should be a `go gettable` project. A pipe is a generic processor that can be used on multiple hosts. A host track the endpoint the proxy gonna listen and which handler gonna be used to process the requests.
 
 A real example of a pipe can be found [here](https://github.com/pipehub/sample).
 

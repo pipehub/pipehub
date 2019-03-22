@@ -13,7 +13,6 @@ server {
 
 host {
   endpoint = "google"
-  origin   = "https://www.google.com"
   handler  = "base.Default"
 }
 
