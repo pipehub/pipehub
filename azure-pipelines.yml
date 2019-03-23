@@ -1,11 +1,24 @@
 pool:
   vmImage: 'Ubuntu-16.04'
 
-steps:
-  - script: echo Hello, world!
-    displayName: 'Run a one-line script'
+resources:
+  containers:
+    container: ci
+    image: pipehub/ci:1
 
-  - script: |
-      echo Add other tasks to build, test, and deploy your project.
-      echo See https://aka.ms/yaml
-    displayName: 'Run a multi-line script'
+steps:
+  - job: build-go
+    displayName: Build
+    container: ci
+    timeoutInMinutes: 5
+    cancelTimeoutInMinutes: 1
+    steps:
+      - script: echo My first job
+# steps:
+#   - script: echo Hello, world!
+#     displayName: 'Run a one-line script'
+
+#   - script: |
+#       echo Add other tasks to build, test, and deploy your project.
+#       echo See https://aka.ms/yaml
+#     displayName: 'Run a multi-line script'
