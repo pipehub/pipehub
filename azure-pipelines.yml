@@ -1,38 +1,10 @@
-jobs:
-  - job: Windows
-    pool:
-      vmImage: 'vs2017-win2016'
-    steps:
-      - script: echo hello from Windows
-  - job: macOS
-    pool:
-      vmImage: 'macOS-10.13'
-    steps:
-      - script: echo hello from macOS
-  - job: Linux
-    pool:
-      vmImage: 'ubuntu-16.04'
-    steps:
-      - script: echo hello from Linux
-# resources:
-#   containers:
-#     container: ci
-#     image: pipehub/ci:1
+pool:
+  vmImage: 'Ubuntu 16.04'
 
-# steps:
-#   - job: build-go
-#     displayName: Build
-#     container: ci
-#     timeoutInMinutes: 5
-#     cancelTimeoutInMinutes: 1
-#     steps:
-#       - script: echo My first job
+container: pipehub/ci:1
 
-# steps:
-#   - script: echo Hello, world!
-#     displayName: 'Run a one-line script'
-
-#   - script: |
-#       echo Add other tasks to build, test, and deploy your project.
-#       echo See https://aka.ms/yaml
-#     displayName: 'Run a multi-line script'
+steps:
+  - script: |
+      ls -la
+      pwd
+    displayName: 'Set up the Go workspace'
