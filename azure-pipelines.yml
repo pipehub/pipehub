@@ -20,23 +20,31 @@ trigger:
       - license
       - readme.md
 
-steps:
-  - script: |
-      go build -mod readonly -o bin/pipehub/pipehub cmd/pipehub/*.go
-    displayName: 'Build'
+jobs:
+  - job: Quality
+    steps:
+      - script: |
+          go build -mod readonly -o bin/pipehub/pipehub cmd/pipehub/*.go
+        displayName: 'Build'
 
-  - script: |
-      make go-test
-    displayName: 'Quality - Go Test'
+      - script: |
+          make go-test
+        displayName: 'Quality - Go Test'
 
-  - script: |
-      make go-linter
-    displayName: 'Quality - Go Linter'
+      - script: |
+          make go-linter
+        displayName: 'Quality - Go Linter'
 
-  - script: |
-      make go-linter-vendor
-    displayName: 'Quality - Go Linter Vendor'
+      - script: |
+          make go-linter-vendor
+        displayName: 'Quality - Go Linter Vendor'
 
-  - script: |
-      make docker-linter
-    displayName: 'Quality - Docker Linter'
+      - script: |
+          make docker-linter
+        displayName: 'Quality - Docker Linter'
+
+  - job: Build
+    dependsOn: Build
+    steps:
+      - script: |
+          make build
