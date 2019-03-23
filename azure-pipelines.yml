@@ -4,7 +4,22 @@ pool:
 container: pipehub/ci:1
 
 steps:
-  - script: |
-      ls -la
-      pwd
-    displayName: 'Set up the Go workspace'
+  - displayName: 'Build'
+    script:
+      - go build -mod readonly -o bin/pipehub/pipehub cmd/pipehub/*.go
+
+  - displayName: 'Quality - Go Test'
+    script:
+      - make go-test
+
+  - displayName: 'Quality - Go Linter'
+    script:
+      - make go-linter
+
+  - displayName: 'Quality - Go Linter Vendor'
+    script:
+      - make go-linter-vendor
+
+  - displayName: 'Quality - Docker Linter'
+    script:
+      - make docker-linter
