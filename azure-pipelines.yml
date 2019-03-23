@@ -1,10 +1,17 @@
 pool:
-  vmImage: 'Ubuntu 16.04'
+  vmImage: Ubuntu 16.04
 
+name: $(SourceBranchName)-$(Rev:.r)
 container: pipehub/ci:1
 
 variables:
   EXEC_CONTAINER: false
+
+# trigger:
+#   batch: true
+#   paths:
+#     include:
+#       - '*.go'
 
 steps:
   - script: |
