@@ -7,11 +7,18 @@ container: pipehub/ci:1
 variables:
   EXEC_CONTAINER: false
 
-# trigger:
-#   batch: true
-#   paths:
-#     include:
-#       - '*.go'
+trigger:
+  batch: true
+  paths:
+    exclude:
+      - cmd/pipehub/pipehub.sample.hcl
+      - misc/docker/build/entrypoint.sh
+      - misc/docker/ci/tools.json
+      - .gitignore
+      - .goreleaser.yml
+      - changelog.md
+      - license
+      - readme.md
 
 steps:
   - script: |
