@@ -138,6 +138,22 @@ func (pm pipeManager) fetch(name string) (pipe, error) {
 	return pipe{}, fmt.Errorf("pipe '%s' not found", name)
 }
 
+// nolint: unused
+func (pm pipeManager) fetchConfig(path, module string) map[string]interface{} {
+	for _, p := range pm.client.cfg.Pipe {
+		if p.Module != "" {
+			if p.Path == path && p.Module == module {
+				return p.Config
+			}
+		} else {
+			if p.Path == path && p.Version == module {
+				return p.Config
+			}
+		}
+	}
+	return nil
+}
+
 func (pm *pipeManager) close(ctx context.Context) error {
 	for _, pipe := range pm.pipes {
 		if err := pipe.instance.Close(ctx); err != nil {

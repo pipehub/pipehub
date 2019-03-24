@@ -18,4 +18,10 @@ http "google" {
 pipe "github.com/pipehub/sample" {
   version = "v0.7.0"
   alias   = "base"
+
+  config {
+    endpoint {
+      "google" = "google.com"
+    }
+  }
 }
