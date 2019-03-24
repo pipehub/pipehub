@@ -17,8 +17,8 @@ import (
 )
 
 type config struct {
-	HTTP   []configHTTP   `mapstructure:"host"`
-	Pipe   []configPipe   `mapstructure:"pipe"`
+	HTTP   []configHTTP
+	Pipe   []configPipe
 	Server []configServer `mapstructure:"server"`
 }
 
@@ -103,16 +103,16 @@ func (c config) ctxShutdown() (ctx context.Context, ctxCancel func()) {
 }
 
 type configPipe struct {
-	Path    string                 `mapstructure:"path"`
-	Version string                 `mapstructure:"version"`
-	Alias   string                 `mapstructure:"alias"`
-	Module  string                 `mapstructure:"module"`
-	Config  map[string]interface{} `mapstructure:"config"`
+	Path    string
+	Version string
+	Alias   string
+	Module  string
+	Config  map[string]interface{}
 }
 
 type configHTTP struct {
-	Endpoint string `mapstructure:"endpoint"`
-	Handler  string `mapstructure:"handler"`
+	Endpoint string
+	Handler  string
 }
 
 type configServer struct {
