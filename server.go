@@ -56,8 +56,8 @@ func (s *server) start() error {
 
 func (s *server) startPipes() (map[string]*chi.Mux, error) {
 	pipes := make(map[string]*chi.Mux)
-	for _, host := range s.client.cfg.Host {
-		p, err := s.client.pipeManager.fetch(host.Handler)
+	for _, configHTTP := range s.client.cfg.HTTP {
+		p, err := s.client.pipeManager.fetch(configHTTP.Handler)
 		if err != nil {
 			return pipes, errors.Wrap(err, "fetch pipe error")
 		}
@@ -76,7 +76,7 @@ func (s *server) startPipes() (map[string]*chi.Mux, error) {
 		}
 		r.Use(p.fn)
 		r.Mount("/", http.HandlerFunc(proxy.ServeHTTP))
-		pipes[host.Endpoint] = r
+		pipes[configHTTP.Endpoint] = r
 	}
 	return pipes, nil
 }

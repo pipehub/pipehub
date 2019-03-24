@@ -11,10 +11,8 @@ server {
   }
 }
 
-host {
-  endpoint = "google"
-  origin   = "https://www.google.com"
-  handler  = "base.Default"
+http "google" {
+  handler = "base.Default"
 }
 
 pipe "github.com/pipehub/handler" {

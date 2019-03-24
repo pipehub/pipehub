@@ -51,15 +51,15 @@ func (pm *pipeManager) initAction() error {
 }
 
 func (pm *pipeManager) initPipes() error {
-	for _, host := range pm.client.cfg.Host {
-		middleware, rawPipe, err := pm.initMiddleware(host.Handler)
+	for _, http := range pm.client.cfg.HTTP {
+		middleware, rawPipe, err := pm.initMiddleware(http.Handler)
 		if err != nil {
 			return errors.Wrap(err, "middleware initialization error")
 		}
 
 		p := pipe{
-			name:     host.Handler,
-			endpoint: host.Endpoint,
+			name:     http.Handler,
+			endpoint: http.Endpoint,
 			instance: rawPipe.instance,
 			alias:    rawPipe.alias,
 			fn:       middleware,
