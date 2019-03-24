@@ -20,8 +20,6 @@ pipe "github.com/pipehub/sample" {
   alias   = "base"
 
   config {
-    endpoint {
-      "google" = "google.com"
-    }
+    host = "https://www.google.com"
   }
 }
