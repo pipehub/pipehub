@@ -13,7 +13,8 @@ import (
 func (pm *pipeManager) fetchPipes() error {
   {{- range .Pipe }}
   {
-    client, err := {{ .Alias }}.NewClient()
+    cfg := pm.fetchConfig("{{ .Path }}", "{{ if .Module }}{{ .Module }}{{ else }}{{ .Revision }}{{ end }}")
+    client, err := {{ .Alias }}.NewClient(cfg)
     if err != nil {
       return errors.Wrap(err, "'{{ if .Module }}{{ .Module }}{{ else }}{{ .Path }}{{ end }}' initialization error")
     }

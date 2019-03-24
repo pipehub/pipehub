@@ -61,6 +61,15 @@ func (c config) toClientConfig() pipehub.ClientConfig {
 		})
 	}
 
+	for _, pipe := range c.Pipe {
+		cfg.Pipe = append(cfg.Pipe, pipehub.ClientConfigPipe{
+			Path:    pipe.Path,
+			Module:  pipe.Module,
+			Version: pipe.Version,
+			Config:  pipe.Config,
+		})
+	}
+
 	if len(c.Server) > 0 {
 		if len(c.Server[0].Action) > 0 {
 			cfg.Server.Action.NotFound = c.Server[0].Action[0].NotFound
@@ -92,10 +101,11 @@ func (c config) ctxShutdown() (ctx context.Context, ctxCancel func()) {
 }
 
 type configPipe struct {
-	Path    string `mapstructure:"path"`
-	Version string `mapstructure:"version"`
-	Alias   string `mapstructure:"alias"`
-	Module  string `mapstructure:"module"`
+	Path    string                 `mapstructure:"path"`
+	Version string                 `mapstructure:"version"`
+	Alias   string                 `mapstructure:"alias"`
+	Module  string                 `mapstructure:"module"`
+	Config  map[string]interface{} `mapstructure:"config"`
 }
 
 type configHTTP struct {
@@ -197,18 +207,30 @@ func loadConfigPipe(raw interface{}) ([]configPipe, error) {
 				}
 
 				for innerKey, innerEntry := range rawSliceMapInnerEntry {
-					value, ok := innerEntry.(string)
-					if !ok {
-						return nil, errors.New("can't type assertion value into string")
-					}
-
 					switch innerKey {
-					case "version":
-						ch.Version = value
-					case "alias":
-						ch.Alias = value
-					case "module":
-						ch.Module = value
+					case "version", "alias", "module":
+						value, ok := innerEntry.(string)
+						if !ok {
+							return nil, errors.New("can't type assertion value into string")
+						}
+
+						switch innerKey {
+						case "version":
+							ch.Version = value
+						case "alias":
+							ch.Alias = value
+						case "module":
+							ch.Module = value
+						}
+					case "config":
+						values, ok := innerEntry.([]map[string]interface{})
+						if !ok {
+							return nil, errors.New("can't type assertion value into map[string]interface{}")
+						}
+						if len(values) > 1 {
+							return nil, errors.New("more then one 'config' found at a pipe, only one is allowed")
+						}
+						ch.Config = values[0]
 					default:
 						return nil, fmt.Errorf("unknow pipe key '%s'", innerKey)
 					}

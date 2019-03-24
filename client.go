@@ -10,6 +10,7 @@ import (
 type ClientConfig struct {
 	Server          ClientConfigServer
 	HTTP            []ClientConfigHTTP
+	Pipe            []ClientConfigPipe
 	AsyncErrHandler func(error)
 }
 
@@ -53,6 +54,14 @@ type ClientConfigHTTP struct {
 	Handler  string
 }
 
+// ClientConfigPipe holds the pipe configuration.
+type ClientConfigPipe struct {
+	Path    string
+	Module  string
+	Version string
+	Config  map[string]interface{}
+}
+
 // Client is pipehub entrypoint.
 type Client struct {
 	cfg         ClientConfig
@@ -80,6 +89,7 @@ func (c *Client) Stop(ctx context.Context) error {
 	return nil
 }
 
+// nolint: gocritic
 func (c *Client) init(cfg ClientConfig) error {
 	cfg.setDefaultValues()
 	c.cfg = cfg
@@ -97,6 +107,7 @@ func (c *Client) init(cfg ClientConfig) error {
 }
 
 // NewClient return a configured pipehub client.
+// nolint: gocritic
 func NewClient(cfg ClientConfig) (Client, error) {
 	var c Client
 	if err := c.init(cfg); err != nil {
