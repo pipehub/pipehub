@@ -9,7 +9,7 @@ import (
 // ClientConfig holds the client configuration.
 type ClientConfig struct {
 	Server          ClientConfigServer
-	Host            []ClientConfigHost
+	HTTP            []ClientConfigHTTP
 	AsyncErrHandler func(error)
 }
 
@@ -47,8 +47,8 @@ func (c *ClientConfigServerHTTP) setDefaultValues() {
 	}
 }
 
-// ClientConfigHost holds the configuration to direct the request from hosts to pipes.
-type ClientConfigHost struct {
+// ClientConfigHTTP holds the configuration to direct the request through pipes.
+type ClientConfigHTTP struct {
 	Endpoint string
 	Handler  string
 }

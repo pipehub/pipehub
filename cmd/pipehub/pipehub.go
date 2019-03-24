@@ -17,7 +17,7 @@ import (
 )
 
 type config struct {
-	Host   []configHost   `mapstructure:"host"`
+	HTTP   []configHTTP   `mapstructure:"host"`
 	Pipe   []configPipe   `mapstructure:"pipe"`
 	Server []configServer `mapstructure:"server"`
 }
@@ -51,13 +51,13 @@ func (c config) toGenerateConfig() pipehub.GenerateConfig {
 func (c config) toClientConfig() pipehub.ClientConfig {
 	cfg := pipehub.ClientConfig{
 		AsyncErrHandler: asyncErrHandler,
-		Host:            make([]pipehub.ClientConfigHost, 0, len(c.Host)),
+		HTTP:            make([]pipehub.ClientConfigHTTP, 0, len(c.HTTP)),
 	}
 
-	for _, host := range c.Host {
-		cfg.Host = append(cfg.Host, pipehub.ClientConfigHost{
-			Endpoint: host.Endpoint,
-			Handler:  host.Handler,
+	for _, http := range c.HTTP {
+		cfg.HTTP = append(cfg.HTTP, pipehub.ClientConfigHTTP{
+			Endpoint: http.Endpoint,
+			Handler:  http.Handler,
 		})
 	}
 
@@ -98,7 +98,7 @@ type configPipe struct {
 	Module  string `mapstructure:"module"`
 }
 
-type configHost struct {
+type configHTTP struct {
 	Endpoint string `mapstructure:"endpoint"`
 	Handler  string `mapstructure:"handler"`
 }
@@ -145,6 +145,11 @@ func loadConfig(path string) (config, error) {
 	var cfg config
 	if err := mapstructure.Decode(rawCfg, &cfg); err != nil {
 		return config{}, errors.Wrap(err, "unmarshal error")
+	}
+
+	cfg.HTTP, err = loadConfigHTTP(rawCfg["http"])
+	if err != nil {
+		return config{}, errors.Wrap(err, "unmarshal http config error")
 	}
 
 	cfg.Pipe, err = loadConfigPipe(rawCfg["pipe"])
@@ -206,6 +211,63 @@ func loadConfigPipe(raw interface{}) ([]configPipe, error) {
 						ch.Module = value
 					default:
 						return nil, fmt.Errorf("unknow pipe key '%s'", innerKey)
+					}
+				}
+
+				result = append(result, ch)
+			}
+		}
+	}
+
+	return result, nil
+}
+
+// loadConfigHTTP expect to receive a interface with this format:
+//
+// []map[string]interface {}{
+// 	{
+// 			"google": []map[string]interface {}{
+// 					{
+// 							"handler": "base.Default",
+// 					},
+// 			},
+// 	},
+// }
+func loadConfigHTTP(raw interface{}) ([]configHTTP, error) {
+	var result []configHTTP
+
+	if raw == nil {
+		return nil, nil
+	}
+
+	rawSliceMap, ok := raw.([]map[string]interface{})
+	if !ok {
+		return nil, errors.New("can't type assertion value into []map[string]interface{} on the first assignment")
+	}
+
+	for _, rawMap := range rawSliceMap {
+		for key, rawMapEntry := range rawMap {
+			rawSliceMapInner, ok := rawMapEntry.([]map[string]interface{})
+			if !ok {
+				return nil, errors.New("can't type assertion value into []map[string]interface{} on the second assignment")
+			}
+
+			for _, rawSliceMapInnerEntry := range rawSliceMapInner {
+				ch := configHTTP{
+					Endpoint: key,
+				}
+
+				for innerKey, innerEntry := range rawSliceMapInnerEntry {
+					value, ok := innerEntry.(string)
+					if !ok {
+						return nil, errors.New("can't type assertion value into string")
+					}
+
+					switch innerKey {
+					case "handler":
+						ch.Handler = value
+					default:
+						return nil, fmt.Errorf("unknow http key '%s'", innerKey)
 					}
 				}
 

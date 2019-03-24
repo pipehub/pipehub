@@ -138,18 +138,18 @@ func TestConfigToClientConfig(t *testing.T) {
 		{
 			"success #1",
 			config{
-				Host:   []configHost{},
+				HTTP:   []configHTTP{},
 				Server: []configServer{},
 			},
 			pipehub.ClientConfig{
-				Host:   []pipehub.ClientConfigHost{},
+				HTTP:   []pipehub.ClientConfigHTTP{},
 				Server: pipehub.ClientConfigServer{},
 			},
 		},
 		{
 			"success #2",
 			config{
-				Host: []configHost{
+				HTTP: []configHTTP{
 					{
 						Endpoint: "endpoint1",
 						Handler:  "handler1",
@@ -176,7 +176,7 @@ func TestConfigToClientConfig(t *testing.T) {
 				},
 			},
 			pipehub.ClientConfig{
-				Host: []pipehub.ClientConfigHost{
+				HTTP: []pipehub.ClientConfigHTTP{
 					{
 						Endpoint: "endpoint1",
 						Handler:  "handler1",
@@ -269,7 +269,7 @@ func TestLoadConfig(t *testing.T) {
 			"success #2",
 			"loadConfig.success.2.hcl",
 			config{
-				Host: []configHost{
+				HTTP: []configHTTP{
 					{
 						Endpoint: "google",
 						Handler:  "base.Default",
