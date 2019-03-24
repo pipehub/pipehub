@@ -18,7 +18,7 @@ type server struct {
 
 func (s *server) init() {
 	s.base = &http.Server{
-		Addr: fmt.Sprintf(":%d", s.client.cfg.Server.HTTP.Port),
+		Addr: fmt.Sprintf(":%d", s.client.cfg.Server.HTTP.Listen.Port),
 	}
 }
 
