@@ -23,26 +23,35 @@ func (c *ClientConfig) setDefaultValues() {
 
 // ClientConfigServer holds the server configuration.
 type ClientConfigServer struct {
-	HTTP   ClientConfigServerHTTP
-	Action ClientConfigServerAction
+	HTTP ClientConfigServerHTTP
 }
 
 func (c *ClientConfigServer) setDefaultValues() {
 	c.HTTP.setDefaultValues()
 }
 
-// ClientConfigServerAction holds the action server configuration.
-type ClientConfigServerAction struct {
+// ClientConfigServerHTTP holds the http server configuration.
+type ClientConfigServerHTTP struct {
+	Action ClientConfigServerHTTPAction
+	Listen ClientConfigServerHTTPListen
+}
+
+func (c *ClientConfigServerHTTP) setDefaultValues() {
+	c.Listen.setDefaultValues()
+}
+
+// ClientConfigServerHTTPAction holds the action server configuration.
+type ClientConfigServerHTTPAction struct {
 	NotFound string
 	Panic    string
 }
 
-// ClientConfigServerHTTP holds the http server configuration.
-type ClientConfigServerHTTP struct {
+// ClientConfigServerHTTPListen holds the configuration to start a HTTP listener.
+type ClientConfigServerHTTPListen struct {
 	Port int
 }
 
-func (c *ClientConfigServerHTTP) setDefaultValues() {
+func (c *ClientConfigServerHTTPListen) setDefaultValues() {
 	if c.Port == 0 {
 		c.Port = 80
 	}

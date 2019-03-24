@@ -70,17 +70,19 @@ func (c config) toClientConfig() pipehub.ClientConfig {
 		})
 	}
 
-	if len(c.Server) > 0 {
-		if len(c.Server[0].Action) > 0 {
-			cfg.Server.Action.NotFound = c.Server[0].Action[0].NotFound
-			cfg.Server.Action.Panic = c.Server[0].Action[0].Panic
+	if (len(c.Server) > 0) && (len(c.Server[0].HTTP) > 0) {
+		var cfgServer pipehub.ClientConfigServer
+
+		if len(c.Server[0].HTTP[0].Action) > 0 {
+			cfgServer.HTTP.Action.NotFound = c.Server[0].HTTP[0].Action[0].NotFound
+			cfgServer.HTTP.Action.Panic = c.Server[0].HTTP[0].Action[0].Panic
 		}
 
-		if len(c.Server[0].HTTP) > 0 {
-			cfg.Server.HTTP = pipehub.ClientConfigServerHTTP{
-				Port: c.Server[0].HTTP[0].Port,
-			}
+		if len(c.Server[0].HTTP[0].Listen) > 0 {
+			cfgServer.HTTP.Listen.Port = c.Server[0].HTTP[0].Listen[0].Port
 		}
+
+		cfg.Server = cfgServer
 	}
 
 	return cfg
@@ -114,9 +116,8 @@ type configHTTP struct {
 }
 
 type configServer struct {
-	GracefulShutdown string               `mapstructure:"graceful-shutdown"`
-	HTTP             []configServerHTTP   `mapstructure:"http"`
-	Action           []configServerAction `mapstructure:"action"`
+	GracefulShutdown string             `mapstructure:"graceful-shutdown"`
+	HTTP             []configServerHTTP `mapstructure:"http"`
 }
 
 func (c configServer) valid() error {
@@ -124,17 +125,33 @@ func (c configServer) valid() error {
 		return errors.New("more then one 'server.http' config block found, only one is allowed")
 	}
 
-	if len(c.Action) > 1 {
-		return errors.New("more then one 'server.action' config block found, only one is allowed")
+	for _, http := range c.HTTP {
+		if err := http.valid(); err != nil {
+			return errors.Wrap(err, "server.http invalid")
+		}
 	}
+
 	return nil
 }
 
 type configServerHTTP struct {
+	Listen []configServerHTTPListen `mapstructure:"listen"`
+	Action []configServerHTTPAction `mapstructure:"action"`
+}
+
+func (c configServerHTTP) valid() error {
+	if len(c.Action) > 1 {
+		return errors.New("more then one 'server.action' config block found, only one is allowed")
+	}
+
+	return nil
+}
+
+type configServerHTTPListen struct {
 	Port int `mapstructure:"port"`
 }
 
-type configServerAction struct {
+type configServerHTTPAction struct {
 	NotFound string `mapstructure:"not-found"`
 	Panic    string `mapstructure:"panic"`
 }

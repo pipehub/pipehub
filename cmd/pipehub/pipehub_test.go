@@ -47,9 +47,13 @@ func TestConfigValid(t *testing.T) {
 			config{
 				Server: []configServer{
 					{
-						Action: []configServerAction{
-							{},
-							{},
+						HTTP: []configServerHTTP{
+							{
+								Action: []configServerHTTPAction{
+									{},
+									{},
+								},
+							},
 						},
 					},
 				},
@@ -163,13 +167,17 @@ func TestConfigToClientConfig(t *testing.T) {
 					{
 						HTTP: []configServerHTTP{
 							{
-								Port: 80,
-							},
-						},
-						Action: []configServerAction{
-							{
-								NotFound: "notFound",
-								Panic:    "panic",
+								Listen: []configServerHTTPListen{
+									{
+										Port: 80,
+									},
+								},
+								Action: []configServerHTTPAction{
+									{
+										NotFound: "notFound",
+										Panic:    "panic",
+									},
+								},
 							},
 						},
 					},
@@ -188,11 +196,13 @@ func TestConfigToClientConfig(t *testing.T) {
 				},
 				Server: pipehub.ClientConfigServer{
 					HTTP: pipehub.ClientConfigServerHTTP{
-						Port: 80,
-					},
-					Action: pipehub.ClientConfigServerAction{
-						NotFound: "notFound",
-						Panic:    "panic",
+						Listen: pipehub.ClientConfigServerHTTPListen{
+							Port: 80,
+						},
+						Action: pipehub.ClientConfigServerHTTPAction{
+							NotFound: "notFound",
+							Panic:    "panic",
+						},
 					},
 				},
 			},
@@ -287,13 +297,17 @@ func TestLoadConfig(t *testing.T) {
 						GracefulShutdown: "10s",
 						HTTP: []configServerHTTP{
 							{
-								Port: 80,
-							},
-						},
-						Action: []configServerAction{
-							{
-								NotFound: "base.NotFound",
-								Panic:    "base.Panic",
+								Listen: []configServerHTTPListen{
+									{
+										Port: 80,
+									},
+								},
+								Action: []configServerHTTPAction{
+									{
+										NotFound: "base.NotFound",
+										Panic:    "base.Panic",
+									},
+								},
 							},
 						},
 					},
