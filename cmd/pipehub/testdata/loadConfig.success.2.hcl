@@ -1,14 +1,16 @@
-server {
+core {
   graceful-shutdown = "10s"
 
   http {
-    action {
-      not-found = "base.NotFound"
-      panic     = "base.Panic"
-    }
+    server {
+      action {
+        not-found = "base.NotFound"
+        panic     = "base.Panic"
+      }
 
-    listen {
-      port = 80
+      listen {
+        port = 80
+      }
     }
   }
 }

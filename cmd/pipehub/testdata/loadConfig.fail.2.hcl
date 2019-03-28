@@ -1,3 +1,3 @@
-server {
+core {
   graceful-shutdown = 1
 }

@@ -17,18 +17,18 @@ import (
 )
 
 type config struct {
-	HTTP   []configHTTP
-	Pipe   []configPipe
-	Server []configServer `mapstructure:"server"`
+	HTTP []configHTTP
+	Pipe []configPipe
+	Core []configCore `mapstructure:"core"`
 }
 
 func (c config) valid() error {
-	if len(c.Server) > 1 {
-		return errors.New("more then one 'server' config block found, only one is allowed")
+	if len(c.Core) > 1 {
+		return errors.New("more then one 'core' config block found, only one is allowed")
 	}
 
-	for _, s := range c.Server {
-		if err := s.valid(); err != nil {
+	for _, core := range c.Core {
+		if err := core.valid(); err != nil {
 			return err
 		}
 	}
@@ -70,30 +70,30 @@ func (c config) toClientConfig() pipehub.ClientConfig {
 		})
 	}
 
-	if (len(c.Server) > 0) && (len(c.Server[0].HTTP) > 0) {
-		var cfgServer pipehub.ClientConfigServer
+	if (len(c.Core) > 0) && (len(c.Core[0].HTTP) > 0) && (len(c.Core[0].HTTP[0].Server) > 0) {
+		var cfgCore pipehub.ClientConfigCore
 
-		if len(c.Server[0].HTTP[0].Action) > 0 {
-			cfgServer.HTTP.Action.NotFound = c.Server[0].HTTP[0].Action[0].NotFound
-			cfgServer.HTTP.Action.Panic = c.Server[0].HTTP[0].Action[0].Panic
+		if len(c.Core[0].HTTP[0].Server[0].Action) > 0 {
+			cfgCore.HTTP.Server.Action.NotFound = c.Core[0].HTTP[0].Server[0].Action[0].NotFound
+			cfgCore.HTTP.Server.Action.Panic = c.Core[0].HTTP[0].Server[0].Action[0].Panic
 		}
 
-		if len(c.Server[0].HTTP[0].Listen) > 0 {
-			cfgServer.HTTP.Listen.Port = c.Server[0].HTTP[0].Listen[0].Port
+		if len(c.Core[0].HTTP[0].Server[0].Listen) > 0 {
+			cfgCore.HTTP.Server.Listen.Port = c.Core[0].HTTP[0].Server[0].Listen[0].Port
 		}
 
-		cfg.Server = cfgServer
+		cfg.Core = cfgCore
 	}
 
 	return cfg
 }
 
 func (c config) ctxShutdown() (ctx context.Context, ctxCancel func()) {
-	if (len(c.Server) == 0) || (c.Server[0].GracefulShutdown == "") {
+	if (len(c.Core) == 0) || (c.Core[0].GracefulShutdown == "") {
 		return context.Background(), func() {}
 	}
 
-	raw := c.Server[0].GracefulShutdown
+	raw := c.Core[0].GracefulShutdown
 	duration, err := time.ParseDuration(raw)
 	if err != nil {
 		err = errors.Wrapf(err, "parse duration '%s' error", raw)
@@ -115,33 +115,51 @@ type configHTTP struct {
 	Handler  string
 }
 
-type configServer struct {
-	GracefulShutdown string             `mapstructure:"graceful-shutdown"`
-	HTTP             []configServerHTTP `mapstructure:"http"`
+type configCore struct {
+	GracefulShutdown string           `mapstructure:"graceful-shutdown"`
+	HTTP             []configCoreHTTP `mapstructure:"http"`
 }
 
-func (c configServer) valid() error {
+func (c configCore) valid() error {
 	if len(c.HTTP) > 1 {
-		return errors.New("more then one 'server.http' config block found, only one is allowed")
+		return errors.New("more then one 'core.http' config block found, only one is allowed")
 	}
 
 	for _, http := range c.HTTP {
 		if err := http.valid(); err != nil {
-			return errors.Wrap(err, "server.http invalid")
+			return errors.Wrap(err, "core.http invalid")
 		}
 	}
 
 	return nil
 }
 
-type configServerHTTP struct {
+type configCoreHTTP struct {
+	Server []configCoreHTTPServer `mapstructure:"server"`
+}
+
+func (c configCoreHTTP) valid() error {
+	if len(c.Server) > 1 {
+		return errors.New("more then one 'core.http.server' config block found, only one is allowed")
+	}
+
+	for _, s := range c.Server {
+		if err := s.valid(); err != nil {
+			return errors.Wrap(err, "invalid 'core.http.server'")
+		}
+	}
+
+	return nil
+}
+
+type configCoreHTTPServer struct {
 	Listen []configServerHTTPListen `mapstructure:"listen"`
 	Action []configServerHTTPAction `mapstructure:"action"`
 }
 
-func (c configServerHTTP) valid() error {
+func (c configCoreHTTPServer) valid() error {
 	if len(c.Action) > 1 {
-		return errors.New("more then one 'server.action' config block found, only one is allowed")
+		return errors.New("more then one 'core.server.http.action' config block found, only one is allowed")
 	}
 
 	return nil
