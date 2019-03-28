@@ -26,7 +26,7 @@ func TestConfigValid(t *testing.T) {
 		{
 			"valid #2",
 			config{
-				Server: []configServer{
+				Core: []configCore{
 					{},
 				},
 			},
@@ -35,7 +35,7 @@ func TestConfigValid(t *testing.T) {
 		{
 			"multiple servers",
 			config{
-				Server: []configServer{
+				Core: []configCore{
 					{},
 					{},
 				},
@@ -45,13 +45,17 @@ func TestConfigValid(t *testing.T) {
 		{
 			"multiple actions inside a server",
 			config{
-				Server: []configServer{
+				Core: []configCore{
 					{
-						HTTP: []configServerHTTP{
+						HTTP: []configCoreHTTP{
 							{
-								Action: []configServerHTTPAction{
-									{},
-									{},
+								Server: []configCoreHTTPServer{
+									{
+										Action: []configServerHTTPAction{
+											{},
+											{},
+										},
+									},
 								},
 							},
 						},
@@ -63,11 +67,15 @@ func TestConfigValid(t *testing.T) {
 		{
 			"multiple http inside a server",
 			config{
-				Server: []configServer{
+				Core: []configCore{
 					{
-						HTTP: []configServerHTTP{
-							{},
-							{},
+						HTTP: []configCoreHTTP{
+							{
+								Server: []configCoreHTTPServer{
+									{},
+									{},
+								},
+							},
 						},
 					},
 				},
@@ -142,12 +150,12 @@ func TestConfigToClientConfig(t *testing.T) {
 		{
 			"success #1",
 			config{
-				HTTP:   []configHTTP{},
-				Server: []configServer{},
+				HTTP: []configHTTP{},
+				Core: []configCore{},
 			},
 			pipehub.ClientConfig{
-				HTTP:   []pipehub.ClientConfigHTTP{},
-				Server: pipehub.ClientConfigServer{},
+				HTTP: []pipehub.ClientConfigHTTP{},
+				Core: pipehub.ClientConfigCore{},
 			},
 		},
 		{
@@ -163,19 +171,23 @@ func TestConfigToClientConfig(t *testing.T) {
 						Handler:  "handler2",
 					},
 				},
-				Server: []configServer{
+				Core: []configCore{
 					{
-						HTTP: []configServerHTTP{
+						HTTP: []configCoreHTTP{
 							{
-								Listen: []configServerHTTPListen{
+								Server: []configCoreHTTPServer{
 									{
-										Port: 80,
-									},
-								},
-								Action: []configServerHTTPAction{
-									{
-										NotFound: "notFound",
-										Panic:    "panic",
+										Listen: []configServerHTTPListen{
+											{
+												Port: 80,
+											},
+										},
+										Action: []configServerHTTPAction{
+											{
+												NotFound: "notFound",
+												Panic:    "panic",
+											},
+										},
 									},
 								},
 							},
@@ -194,14 +206,16 @@ func TestConfigToClientConfig(t *testing.T) {
 						Handler:  "handler2",
 					},
 				},
-				Server: pipehub.ClientConfigServer{
-					HTTP: pipehub.ClientConfigServerHTTP{
-						Listen: pipehub.ClientConfigServerHTTPListen{
-							Port: 80,
-						},
-						Action: pipehub.ClientConfigServerHTTPAction{
-							NotFound: "notFound",
-							Panic:    "panic",
+				Core: pipehub.ClientConfigCore{
+					HTTP: pipehub.ClientConfigCoreHTTP{
+						Server: pipehub.ClientConfigCoreHTTPServer{
+							Listen: pipehub.ClientConfigCoreHTTPServerListen{
+								Port: 80,
+							},
+							Action: pipehub.ClientConfigCoreHTTPServerAction{
+								NotFound: "notFound",
+								Panic:    "panic",
+							},
 						},
 					},
 				},
@@ -228,7 +242,7 @@ func TestConfigCtxShutdown(t *testing.T) {
 		{
 			"with deadline",
 			config{
-				Server: []configServer{
+				Core: []configCore{
 					{
 						GracefulShutdown: "1s",
 					},
@@ -292,20 +306,24 @@ func TestLoadConfig(t *testing.T) {
 						Alias:   "base",
 					},
 				},
-				Server: []configServer{
+				Core: []configCore{
 					{
 						GracefulShutdown: "10s",
-						HTTP: []configServerHTTP{
+						HTTP: []configCoreHTTP{
 							{
-								Listen: []configServerHTTPListen{
+								Server: []configCoreHTTPServer{
 									{
-										Port: 80,
-									},
-								},
-								Action: []configServerHTTPAction{
-									{
-										NotFound: "base.NotFound",
-										Panic:    "base.Panic",
+										Listen: []configServerHTTPListen{
+											{
+												Port: 80,
+											},
+										},
+										Action: []configServerHTTPAction{
+											{
+												NotFound: "base.NotFound",
+												Panic:    "base.Panic",
+											},
+										},
 									},
 								},
 							},

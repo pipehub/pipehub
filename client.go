@@ -8,50 +8,59 @@ import (
 
 // ClientConfig holds the client configuration.
 type ClientConfig struct {
-	Server          ClientConfigServer
+	Core            ClientConfigCore
 	HTTP            []ClientConfigHTTP
 	Pipe            []ClientConfigPipe
 	AsyncErrHandler func(error)
 }
 
 func (c *ClientConfig) setDefaultValues() {
-	c.Server.setDefaultValues()
+	c.Core.setDefaultValues()
 	if c.AsyncErrHandler == nil {
 		c.AsyncErrHandler = func(error) {}
 	}
 }
 
-// ClientConfigServer holds the server configuration.
-type ClientConfigServer struct {
-	HTTP ClientConfigServerHTTP
+// ClientConfigCore holds the core configuration.
+type ClientConfigCore struct {
+	HTTP ClientConfigCoreHTTP
 }
 
-func (c *ClientConfigServer) setDefaultValues() {
+func (c *ClientConfigCore) setDefaultValues() {
 	c.HTTP.setDefaultValues()
 }
 
-// ClientConfigServerHTTP holds the http server configuration.
-type ClientConfigServerHTTP struct {
-	Action ClientConfigServerHTTPAction
-	Listen ClientConfigServerHTTPListen
+// ClientConfigCoreHTTP holds the core HTTP configuration.
+type ClientConfigCoreHTTP struct {
+	Server ClientConfigCoreHTTPServer
 }
 
-func (c *ClientConfigServerHTTP) setDefaultValues() {
+func (c *ClientConfigCoreHTTP) setDefaultValues() {
+	c.Server.setDefaultValues()
+}
+
+// ClientConfigCoreHTTPServer holds the core HTTP server configurations.
+type ClientConfigCoreHTTPServer struct {
+	Action ClientConfigCoreHTTPServerAction
+	Listen ClientConfigCoreHTTPServerListen
+}
+
+func (c *ClientConfigCoreHTTPServer) setDefaultValues() {
 	c.Listen.setDefaultValues()
 }
 
-// ClientConfigServerHTTPAction holds the action server configuration.
-type ClientConfigServerHTTPAction struct {
+// ClientConfigCoreHTTPServerAction holds the action server configuration.
+type ClientConfigCoreHTTPServerAction struct {
 	NotFound string
 	Panic    string
 }
 
-// ClientConfigServerHTTPListen holds the configuration to start a HTTP listener.
-type ClientConfigServerHTTPListen struct {
+// ClientConfigCoreHTTPServerListen holds the configuration to start a HTTP listener.
+type ClientConfigCoreHTTPServerListen struct {
 	Port int
 }
 
-func (c *ClientConfigServerHTTPListen) setDefaultValues() {
+func (c *ClientConfigCoreHTTPServerListen) setDefaultValues() {
 	if c.Port == 0 {
 		c.Port = 80
 	}

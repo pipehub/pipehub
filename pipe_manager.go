@@ -36,13 +36,13 @@ func (pm *pipeManager) init() error {
 }
 
 func (pm *pipeManager) initAction() error {
-	notFoundAction, err := pm.initFunc(pm.client.cfg.Server.HTTP.Action.NotFound)
+	notFoundAction, err := pm.initFunc(pm.client.cfg.Core.HTTP.Server.Action.NotFound)
 	if err != nil {
 		return errors.Wrap(err, "not found action initialization error")
 	}
 	pm.action.notFound = notFoundAction
 
-	panik, _, err := pm.initMiddleware(pm.client.cfg.Server.HTTP.Action.Panic)
+	panik, _, err := pm.initMiddleware(pm.client.cfg.Core.HTTP.Server.Action.Panic)
 	if err != nil {
 		return errors.Wrap(err, "panic initialization error")
 	}
