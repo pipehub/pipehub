@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -66,6 +67,9 @@ func cmdStartRun(configPath *string) func(*cobra.Command, []string) {
 
 		go func() {
 			<-ctxShutdown.Done()
+			if ctxShutdown.Err() == context.Canceled {
+				return
+			}
 			fmt.Println("pipehub did not gracefuly stopped")
 			os.Exit(1)
 		}()

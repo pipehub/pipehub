@@ -46,7 +46,7 @@ func (s *server) start() error {
 	s.base.Handler = r
 
 	go func() {
-		if err := s.base.ListenAndServe(); err != nil {
+		if err := s.base.ListenAndServe(); err != http.ErrServerClosed {
 			err = errors.Wrapf(err, "http server listen error at addr '%s'", s.base.Addr)
 			s.client.cfg.AsyncErrHandler(err)
 		}
