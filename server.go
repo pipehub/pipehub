@@ -3,8 +3,10 @@ package pipehub
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/httputil"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/hostrouter"
@@ -12,13 +14,30 @@ import (
 )
 
 type server struct {
-	client *Client
-	base   *http.Server
+	client    *Client
+	transport *http.Transport
+	base      *http.Server
 }
 
 func (s *server) init() {
 	s.base = &http.Server{
 		Addr: fmt.Sprintf(":%d", s.client.cfg.Core.HTTP.Server.Listen.Port),
+	}
+
+	transportConfig := s.client.cfg.Core.HTTP.Client
+	s.transport = &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		DialContext: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+			DualStack: true,
+		}).DialContext,
+		MaxIdleConns:          transportConfig.MaxIdleConns,
+		MaxConnsPerHost:       transportConfig.MaxConnsPerHost,
+		MaxIdleConnsPerHost:   transportConfig.MaxIdleConnsPerHost,
+		IdleConnTimeout:       transportConfig.IdleConnTimeout,
+		TLSHandshakeTimeout:   transportConfig.TLSHandshakeTimeout,
+		ExpectContinueTimeout: transportConfig.ExpectContinueTimeout,
 	}
 }
 
@@ -69,7 +88,10 @@ func (s *server) startPipes() (map[string]*chi.Mux, error) {
 		director := func(req *http.Request) {
 			req.Header.Set("X-Forwarded-Host", req.Header.Get("Host"))
 		}
-		proxy := &httputil.ReverseProxy{Director: director}
+		proxy := &httputil.ReverseProxy{
+			Director:  director,
+			Transport: s.transport,
+		}
 		r := chi.NewRouter()
 		if s.client.pipeManager.action.panik != nil {
 			r.Use(s.client.pipeManager.action.panik)
