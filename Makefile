@@ -1,5 +1,5 @@
 PROJECT_PATH       = /opt/pipehub
-DOCKER_CI_IMAGE    = registry.gitlab.com/pipehub/pipehub/ci
+DOCKER_CI_IMAGE    = pipehub/ci
 DOCKER_CI_VERSION  = 2
 CONFIG_PATH       ?= $(CURDIR)/cmd/pipehub/pipehub.hcl
 WORKSPACE_PATH     = $(CURDIR)

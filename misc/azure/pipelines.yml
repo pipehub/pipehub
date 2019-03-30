@@ -1,0 +1,56 @@
+name: $(SourceBranchName)-$(Rev:.r)
+
+variables:
+  EXEC_CONTAINER: false
+  GO111MODULES: on
+
+trigger:
+  batch: true
+  paths:
+    exclude:
+      - cmd/pipehub/pipehub.sample.hcl
+      - misc/docker/build/entrypoint.sh
+      - misc/docker/ci/tools.json
+      - .gitignore
+      - .goreleaser.yml
+      - changelog.md
+      - license
+      - readme.md
+
+stages:
+  - stage: quality
+    displayName: Quality
+    jobs:
+      - job: quality_go_test
+        container: pipehub/ci:2
+        displayName: '| Go Test'
+        steps:
+          - script: make go-test
+
+      - job: quality_go_linter
+        container: pipehub/ci:2
+        displayName: '| Go Linter'
+        steps:
+          - script: make go-linter
+
+      - job: quality_go_linter_vendor
+        container: pipehub/ci:2
+        displayName: '| Go Linter Vendor'
+        steps:
+          - script: make go-linter-vendor
+
+      - job: quality_docker_linter
+        container: pipehub/ci:2
+        displayName: '| Go Docker'
+        steps:
+          - script: make docker-linter
+
+  - stage: build
+    displayName: Build
+    dependsOn: quality
+    jobs:
+      - job: build_pipehub
+        container: pipehub/ci:2
+        displayName: '| PipeHub'
+        steps:
+          - script: go build -mod readonly -o bin/pipehub/pipehub cmd/pipehub/*.go
