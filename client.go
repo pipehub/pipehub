@@ -2,6 +2,7 @@ package pipehub
 
 import (
 	"context"
+	"time"
 
 	"github.com/pkg/errors"
 )
@@ -33,6 +34,7 @@ func (c *ClientConfigCore) setDefaultValues() {
 // ClientConfigCoreHTTP holds the core HTTP configuration.
 type ClientConfigCoreHTTP struct {
 	Server ClientConfigCoreHTTPServer
+	Client ClientConfigCoreHTTPClient
 }
 
 func (c *ClientConfigCoreHTTP) setDefaultValues() {
@@ -47,6 +49,18 @@ type ClientConfigCoreHTTPServer struct {
 
 func (c *ClientConfigCoreHTTPServer) setDefaultValues() {
 	c.Listen.setDefaultValues()
+}
+
+// ClientConfigCoreHTTPClient holds the core HTTP client configurations.
+type ClientConfigCoreHTTPClient struct {
+	DisableKeepAlive      bool
+	DisableCompression    bool
+	MaxIdleConns          int
+	MaxIdleConnsPerHost   int
+	MaxConnsPerHost       int
+	IdleConnTimeout       time.Duration
+	TLSHandshakeTimeout   time.Duration
+	ExpectContinueTimeout time.Duration
 }
 
 // ClientConfigCoreHTTPServerAction holds the action server configuration.

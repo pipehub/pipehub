@@ -225,7 +225,8 @@ func TestConfigToClientConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			actual := tt.config.toClientConfig()
+			actual, err := tt.config.toClientConfig()
+			require.NoError(t, err)
 			actual.AsyncErrHandler = tt.expected.AsyncErrHandler
 			require.Equal(t, tt.expected, actual)
 		})

@@ -48,7 +48,7 @@ func (c config) toGenerateConfig() pipehub.GenerateConfig {
 	return cfg
 }
 
-func (c config) toClientConfig() pipehub.ClientConfig {
+func (c config) toClientConfig() (pipehub.ClientConfig, error) {
 	cfg := pipehub.ClientConfig{
 		AsyncErrHandler: asyncErrHandler,
 		HTTP:            make([]pipehub.ClientConfigHTTP, 0, len(c.HTTP)),
@@ -71,21 +71,42 @@ func (c config) toClientConfig() pipehub.ClientConfig {
 	}
 
 	if (len(c.Core) > 0) && (len(c.Core[0].HTTP) > 0) && (len(c.Core[0].HTTP[0].Server) > 0) {
-		var cfgCore pipehub.ClientConfigCore
-
 		if len(c.Core[0].HTTP[0].Server[0].Action) > 0 {
-			cfgCore.HTTP.Server.Action.NotFound = c.Core[0].HTTP[0].Server[0].Action[0].NotFound
-			cfgCore.HTTP.Server.Action.Panic = c.Core[0].HTTP[0].Server[0].Action[0].Panic
+			cfg.Core.HTTP.Server.Action.NotFound = c.Core[0].HTTP[0].Server[0].Action[0].NotFound
+			cfg.Core.HTTP.Server.Action.Panic = c.Core[0].HTTP[0].Server[0].Action[0].Panic
 		}
 
 		if len(c.Core[0].HTTP[0].Server[0].Listen) > 0 {
-			cfgCore.HTTP.Server.Listen.Port = c.Core[0].HTTP[0].Server[0].Listen[0].Port
+			cfg.Core.HTTP.Server.Listen.Port = c.Core[0].HTTP[0].Server[0].Listen[0].Port
 		}
-
-		cfg.Core = cfgCore
 	}
 
-	return cfg
+	if (len(c.Core) > 0) && (len(c.Core[0].HTTP) > 0) && (len(c.Core[0].HTTP[0].Client) > 0) {
+		client := c.Core[0].HTTP[0].Client[0]
+		cfg.Core.HTTP.Client.DisableCompression = client.DisableCompression
+		cfg.Core.HTTP.Client.DisableKeepAlive = client.DisableKeepAlive
+		cfg.Core.HTTP.Client.MaxConnsPerHost = client.MaxConnsPerHost
+		cfg.Core.HTTP.Client.MaxIdleConns = client.MaxIdleConns
+		cfg.Core.HTTP.Client.MaxIdleConnsPerHost = client.MaxIdleConnsPerHost
+
+		var err error
+		cfg.Core.HTTP.Client.ExpectContinueTimeout, err = time.ParseDuration(client.ExpectContinueTimeout)
+		if err != nil {
+			return pipehub.ClientConfig{}, errors.Wrapf(err, "parse duration '%s' error", client.ExpectContinueTimeout)
+		}
+
+		cfg.Core.HTTP.Client.IdleConnTimeout, err = time.ParseDuration(client.IdleConnTimeout)
+		if err != nil {
+			return pipehub.ClientConfig{}, errors.Wrapf(err, "parse duration '%s' error", client.IdleConnTimeout)
+		}
+
+		cfg.Core.HTTP.Client.TLSHandshakeTimeout, err = time.ParseDuration(client.TLSHandshakeTimeout)
+		if err != nil {
+			return pipehub.ClientConfig{}, errors.Wrapf(err, "parse duration '%s' error", client.TLSHandshakeTimeout)
+		}
+	}
+
+	return cfg, nil
 }
 
 func (c config) ctxShutdown() (ctx context.Context, ctxCancel func()) {
@@ -136,6 +157,7 @@ func (c configCore) valid() error {
 
 type configCoreHTTP struct {
 	Server []configCoreHTTPServer `mapstructure:"server"`
+	Client []configCoreHTTPClient `mapstructure:"client"`
 }
 
 func (c configCoreHTTP) valid() error {
@@ -147,6 +169,10 @@ func (c configCoreHTTP) valid() error {
 		if err := s.valid(); err != nil {
 			return errors.Wrap(err, "invalid 'core.http.server'")
 		}
+	}
+
+	if len(c.Client) > 1 {
+		return errors.New("more then one 'core.http.client' config block found, only one is allowed")
 	}
 
 	return nil
@@ -163,6 +189,17 @@ func (c configCoreHTTPServer) valid() error {
 	}
 
 	return nil
+}
+
+type configCoreHTTPClient struct {
+	DisableKeepAlive      bool   `mapstructure:"disable-keep-alive"`
+	DisableCompression    bool   `mapstructure:"disable-compression"`
+	MaxIdleConns          int    `mapstructure:"max-idle-conns"`
+	MaxIdleConnsPerHost   int    `mapstructure:"max-idle-conns-per-host"`
+	MaxConnsPerHost       int    `mapstructure:"max-conns-per-host"`
+	IdleConnTimeout       string `mapstructure:"idle-conn-timeout"`
+	TLSHandshakeTimeout   string `mapstructure:"tls-handshake-timeout"`
+	ExpectContinueTimeout string `mapstructure:"expect-continue-timeout"`
 }
 
 type configServerHTTPListen struct {

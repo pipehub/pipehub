@@ -12,6 +12,17 @@ core {
         panic     = "base.Panic"
       }
     }
+
+    client {
+      disable-keep-alive      = false
+      disable-compression     = false
+      max-idle-conns          = 1000
+      max-idle-conns-per-host = 100
+      max-conns-per-host      = 1000
+      idle-conn-timeout       = "90s"
+      tls-handshake-timeout   = "10s"
+      expect-continue-timeout = "1s"
+    }
   }
 }
 
