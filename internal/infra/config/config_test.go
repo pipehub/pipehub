@@ -1,7 +1,8 @@
-package main
+package config
 
 import (
 	"fmt"
+	"io/ioutil"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -9,23 +10,29 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/pipehub/pipehub"
+	"github.com/pipehub/pipehub/internal"
+	"github.com/pipehub/pipehub/internal/application/generator"
+	"github.com/pipehub/pipehub/internal/application/server"
+	"github.com/pipehub/pipehub/internal/application/server/service/pipe"
+	"github.com/pipehub/pipehub/internal/application/server/transport/http"
 )
 
 func TestConfigValid(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name      string
-		config    config
+		config    Config
 		assertion require.ErrorAssertionFunc
 	}{
 		{
 			"valid #1",
-			config{},
+			Config{},
 			require.NoError,
 		},
 		{
 			"valid #2",
-			config{
+			Config{
 				Core: []configCore{
 					{},
 				},
@@ -34,7 +41,7 @@ func TestConfigValid(t *testing.T) {
 		},
 		{
 			"multiple servers",
-			config{
+			Config{
 				Core: []configCore{
 					{},
 					{},
@@ -44,7 +51,7 @@ func TestConfigValid(t *testing.T) {
 		},
 		{
 			"multiple actions inside a server",
-			config{
+			Config{
 				Core: []configCore{
 					{
 						HTTP: []configCoreHTTP{
@@ -66,7 +73,7 @@ func TestConfigValid(t *testing.T) {
 		},
 		{
 			"multiple http inside a server",
-			config{
+			Config{
 				Core: []configCore{
 					{
 						HTTP: []configCoreHTTP{
@@ -86,25 +93,28 @@ func TestConfigValid(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			tt.assertion(t, tt.config.valid())
 		})
 	}
 }
 
-func TestConfigToGenerateConfig(t *testing.T) {
+func TestConfigToGenerator(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
-		config   config
-		expected []pipehub.GenerateConfigPipe
+		config   Config
+		expected generator.ClientConfig
 	}{
 		{
 			"success #1",
-			config{},
-			[]pipehub.GenerateConfigPipe{},
+			Config{},
+			generator.ClientConfig{},
 		},
 		{
 			"success #2",
-			config{
+			Config{
 				Pipe: []configPipe{
 					{
 						Path:    "path1",
@@ -118,16 +128,18 @@ func TestConfigToGenerateConfig(t *testing.T) {
 					},
 				},
 			},
-			[]pipehub.GenerateConfigPipe{
-				{
-					Path:    "path1",
-					Version: "version1",
-					Alias:   "alias1",
-				},
-				{
-					Path:    "path2",
-					Version: "version2",
-					Alias:   "alias2",
+			generator.ClientConfig{
+				Pipes: []generator.Pipe{
+					{
+						ImportPath: "path1",
+						Version:    "version1",
+						Alias:      "alias1",
+					},
+					{
+						ImportPath: "path2",
+						Version:    "version2",
+						Alias:      "alias2",
+					},
 				},
 			},
 		},
@@ -135,32 +147,24 @@ func TestConfigToGenerateConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			actual := tt.config.toGenerateConfig().Pipe
-			require.ElementsMatch(t, tt.expected, actual)
+			t.Parallel()
+			actual := tt.config.ToGenerator().Pipes
+			require.ElementsMatch(t, tt.expected.Pipes, actual)
 		})
 	}
 }
 
-func TestConfigToClientConfig(t *testing.T) {
+func TestConfigToServer(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
-		config   config
-		expected pipehub.ClientConfig
+		config   Config
+		expected server.ClientConfig
 	}{
 		{
-			"success #1",
-			config{
-				HTTP: []configHTTP{},
-				Core: []configCore{},
-			},
-			pipehub.ClientConfig{
-				HTTP: []pipehub.ClientConfigHTTP{},
-				Core: pipehub.ClientConfigCore{},
-			},
-		},
-		{
-			"success #2",
-			config{
+			"success",
+			Config{
 				HTTP: []configHTTP{
 					{
 						Endpoint: "endpoint1",
@@ -195,28 +199,36 @@ func TestConfigToClientConfig(t *testing.T) {
 					},
 				},
 			},
-			pipehub.ClientConfig{
-				HTTP: []pipehub.ClientConfigHTTP{
-					{
-						Endpoint: "endpoint1",
-						Handler:  "handler1",
-					},
-					{
-						Endpoint: "endpoint2",
-						Handler:  "handler2",
-					},
-				},
-				Core: pipehub.ClientConfigCore{
-					HTTP: pipehub.ClientConfigCoreHTTP{
-						Server: pipehub.ClientConfigCoreHTTPServer{
-							Listen: pipehub.ClientConfigCoreHTTPServerListen{
-								Port: 80,
+			server.ClientConfig{
+				Pipe: []internal.Pipe{},
+				Service: server.ClientConfigService{
+					Pipe: server.ClientConfigServicePipe{
+						HTTP: pipe.HTTPConfig{
+							Entry: []pipe.HTTPConfigEntry{
+								{Endpoint: "endpoint1", Handler: "handler1"},
+								{Endpoint: "endpoint2", Handler: "handler2"},
 							},
-							Action: pipehub.ClientConfigCoreHTTPServerAction{
+							DefaultAction: pipe.HTTPConfigDefaultAction{
 								NotFound: "notFound",
 								Panic:    "panic",
 							},
+							Instance: nil,
 						},
+					},
+				},
+				Transport: server.ClientConfigTransport{
+					HTTP: http.ServerConfig{
+						Port: 80,
+						Host: []internal.Host{
+							{Endpoint: "endpoint1", Handler: "handler1"},
+							{Endpoint: "endpoint2", Handler: "handler2"},
+						},
+						DefaultAction: http.ServerConfigDefaultAction{
+							Panic:    "panic",
+							NotFound: "notFound",
+						},
+						HandlerFetcher: nil,
+						RoundTripper:   nil,
 					},
 				},
 			},
@@ -225,24 +237,27 @@ func TestConfigToClientConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			actual, err := tt.config.toClientConfig()
+			t.Parallel()
+
+			actual, err := tt.config.ToServer()
 			require.NoError(t, err)
-			actual.AsyncErrHandler = tt.expected.AsyncErrHandler
 			require.Equal(t, tt.expected, actual)
 		})
 	}
 }
 
 func TestConfigCtxShutdown(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name     string
-		config   config
+		config   Config
 		deadline time.Duration
 		exist    require.BoolAssertionFunc
 	}{
 		{
 			"with deadline",
-			config{
+			Config{
 				Core: []configCore{
 					{
 						GracefulShutdown: "1s",
@@ -254,7 +269,7 @@ func TestConfigCtxShutdown(t *testing.T) {
 		},
 		{
 			"without deadline",
-			config{},
+			Config{},
 			0,
 			require.False,
 		},
@@ -262,7 +277,10 @@ func TestConfigCtxShutdown(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx, ctxCancel := tt.config.ctxShutdown()
+			t.Parallel()
+
+			ctx, ctxCancel, err := tt.config.CtxShutdown()
+			require.NoError(t, err, "should not have a error parsing the context with timeout")
 			defer ctxCancel()
 
 			deadline, ok := ctx.Deadline()
@@ -277,23 +295,25 @@ func TestConfigCtxShutdown(t *testing.T) {
 	}
 }
 
-func TestLoadConfig(t *testing.T) {
+func TestNewConfig(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		name      string
 		path      string
-		expected  config
+		expected  Config
 		assertion require.ErrorAssertionFunc
 	}{
 		{
 			"success #1",
-			"loadConfig.success.1.hcl",
-			config{},
+			"newConfig.success.1.hcl",
+			Config{},
 			require.NoError,
 		},
 		{
 			"success #2",
-			"loadConfig.success.2.hcl",
-			config{
+			"newConfig.success.2.hcl",
+			Config{
 				HTTP: []configHTTP{
 					{
 						Endpoint: "google",
@@ -336,23 +356,27 @@ func TestLoadConfig(t *testing.T) {
 		},
 		{
 			"invalid hcl",
-			"loadConfig.fail.1.hcl",
-			config{},
+			"newConfig.fail.1.hcl",
+			Config{},
 			require.Error,
 		},
 		{
 			"decode error",
-			"loadConfig.fail.2.hcl",
-			config{},
+			"newConfig.fail.2.hcl",
+			Config{},
 			require.Error,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			path := testdataPath(t, tt.path)
+			t.Parallel()
 
-			actual, err := loadConfig(path)
+			path := testdataPath(t, tt.path)
+			payload, err := ioutil.ReadFile(path)
+			require.NoError(t, err, "should not have an error loading the config file")
+
+			actual, err := NewConfig(payload)
 			tt.assertion(t, err)
 			if err != nil {
 				return

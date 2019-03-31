@@ -11,7 +11,7 @@
 
 # generated files
 /go.mod.backup
-/pipe_dynamic.go
+/internal/application/server/service/pipe/dynamic.go
 
 # editor
 /.vscode
