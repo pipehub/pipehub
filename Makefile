@@ -1,6 +1,6 @@
 PROJECT_PATH       = /opt/pipehub
 DOCKER_CI_IMAGE    = registry.gitlab.com/pipehub/pipehub/ci
-DOCKER_CI_VERSION  = 1
+DOCKER_CI_VERSION  = 2
 CONFIG_PATH       ?= $(CURDIR)/cmd/pipehub/pipehub.hcl
 WORKSPACE_PATH     = $(CURDIR)
 RAWTAG             = $(shell git tag --points-at | head -n1 | cut -c2-)
@@ -14,13 +14,9 @@ release:
 	@PIPEHUB_DOCKER_IMAGE_VERSION=$(RAWTAG) goreleaser release --rm-dist
 
 build:
-	@go build -tags "$(TAGS)" -o cmd/pipehub/pipehub cmd/pipehub/*.go
-
-generate:
-	@rm -f pipe_dynamic.go
-	@GOOS="" GOARCH="" make build
-	@./cmd/pipehub/pipehub generate -c $(CONFIG_PATH) -w $(WORKSPACE_PATH)
-	@GOOS=${GOOS} GOARCH=${GOARCH} TAGS=pipe make build
+	@rm -f internal/application/server/service/pipe/dynamic.go
+	@go run cmd/pipehub/*.go generate -c $(CONFIG_PATH) -w $(WORKSPACE_PATH)
+	@go build -o cmd/pipehub/pipehub cmd/pipehub/*.go
 
 pre-pr: go-test go-linter go-linter-vendor docker-linter
 
@@ -30,14 +26,14 @@ ifeq ($(EXEC_CONTAINER), false)
 	@go tool cover -func=test.cover
 	@rm -f test.cover
 else
-	TARGET=go-test make docker-exec
+	@TARGET=go-test make docker-exec
 endif
 
 go-linter:
 ifeq ($(EXEC_CONTAINER), false)
 	@golangci-lint run -c misc/golangci/golangci.toml
 else
-	TARGET=go-linter make docker-exec
+	@TARGET=go-linter make docker-exec
 endif
 
 go-linter-vendor:
@@ -46,14 +42,14 @@ ifeq ($(EXEC_CONTAINER), false)
 	@go mod vendor
 	@git diff --exit-code
 else
-	TARGET=go-linter-vendor make docker-exec
+	@TARGET=go-linter-vendor make docker-exec
 endif
 
 docker-linter:
 ifeq ($(EXEC_CONTAINER), false)
 	@hadolint misc/docker/ci/Dockerfile
 else
-	TARGET=docker-linter make docker-exec
+	@TARGET=docker-linter make docker-exec
 endif
 
 docker-exec:
@@ -61,7 +57,6 @@ docker-exec:
 		-t \
 		--rm \
 		-e EXEC_CONTAINER=false \
-		-e TAGS=$(TAGS) \
 		-e "TERM=xterm-256color" \
 		-v $(PWD):$(PROJECT_PATH) \
 		-w $(PROJECT_PATH) \

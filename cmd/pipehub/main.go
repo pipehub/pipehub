@@ -3,13 +3,16 @@ package main
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 
-	"github.com/pipehub/pipehub"
+	"github.com/pipehub/pipehub/internal/application/generator"
+	"github.com/pipehub/pipehub/internal/application/server"
+	"github.com/pipehub/pipehub/internal/infra/config"
 )
 
 var done = make(chan os.Signal, 1)
@@ -37,38 +40,39 @@ func cmdStart() *cobra.Command {
 
 func cmdStartRun(configPath *string) func(*cobra.Command, []string) {
 	return func(cmd *cobra.Command, args []string) {
-		rawCfg, err := loadConfig(*configPath)
+		payload, err := ioutil.ReadFile(*configPath)
 		if err != nil {
-			err = errors.Wrap(err, "load config error")
+			err = errors.Wrap(err, "load file error")
 			fatal(err)
 		}
 
-		if err := rawCfg.valid(); err != nil {
-			err = errors.Wrap(err, "invalid config")
+		ccfg, err := config.NewConfig(payload)
+		if err != nil {
+			err = errors.Wrap(err, "config initialization error")
 			fatal(err)
 		}
 
-		cfg, err := rawCfg.toClientConfig()
+		cfg, err := ccfg.ToServer()
 		if err != nil {
 			err = errors.Wrap(err, "invalid config load")
 			fatal(err)
 		}
+		cfg.Transport.HTTP.AsyncErrorHandler = asyncErrHandler
 
-		ctxShutdown, ctxShutdownCancel := rawCfg.ctxShutdown()
-		defer ctxShutdownCancel()
-
-		c, err := pipehub.NewClient(cfg)
-		if err != nil {
-			err = errors.Wrap(err, "pipehub new client error")
-			fatal(err)
-		}
-
+		c := server.NewClient(cfg)
 		if err := c.Start(); err != nil {
 			err = errors.Wrap(err, "pipehub start error")
 			fatal(err)
 		}
 
 		wait()
+
+		ctxShutdown, ctxShutdownCancel, err := ccfg.CtxShutdown()
+		if err != nil {
+			err = errors.Wrap(err, "context initialization error")
+			fatal(err)
+		}
+		defer ctxShutdownCancel()
 
 		go func() {
 			<-ctxShutdown.Done()
@@ -103,24 +107,30 @@ func cmdGenerate() *cobra.Command {
 
 func cmdGenerateRun(configPath, workspacePath *string) func(*cobra.Command, []string) {
 	return func(cmd *cobra.Command, args []string) {
-		rawCfg, err := loadConfig(*configPath)
+		payload, err := ioutil.ReadFile(*configPath)
 		if err != nil {
-			err = errors.Wrap(err, "load config error")
+			err = errors.Wrap(err, "load file error")
 			fatal(err)
 		}
-		cfg := rawCfg.toGenerateConfig()
 
+		ccfg, err := config.NewConfig(payload)
+		if err != nil {
+			err = errors.Wrap(err, "config initialization error")
+			fatal(err)
+		}
+
+		cfg := ccfg.ToGenerator()
 		fs := afero.NewBasePathFs(afero.NewOsFs(), *workspacePath)
 		cfg.Filesystem = fs
 
-		g, err := pipehub.NewGenerate(cfg)
+		g, err := generator.NewClient(cfg)
 		if err != nil {
-			err = errors.Wrap(err, "pipehub generate initialization error")
+			err = errors.Wrap(err, "pipehub generator initialization error")
 			fatal(err)
 		}
 
 		if err = g.Do(); err != nil {
-			err = errors.Wrap(err, "pipehub generate execute error")
+			err = errors.Wrap(err, "pipehub generator execute error")
 			fatal(err)
 		}
 	}
