@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"text/tabwriter"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
@@ -17,9 +18,16 @@ import (
 
 var done = make(chan os.Signal, 1)
 
+var (
+	gitCommit string
+	goVersion string
+	version   string
+	built     string
+)
+
 func main() {
 	var rootCmd = &cobra.Command{Use: "pipehub"}
-	rootCmd.AddCommand(cmdStart(), cmdGenerate())
+	rootCmd.AddCommand(cmdStart(), cmdGenerate(), cmdVersion())
 	if err := rootCmd.Execute(); err != nil {
 		err = errors.Wrap(err, "pipehub cli initialization error")
 		fatal(err)
@@ -133,5 +141,33 @@ func cmdGenerateRun(configPath, workspacePath *string) func(*cobra.Command, []st
 			err = errors.Wrap(err, "pipehub generator execute error")
 			fatal(err)
 		}
+	}
+}
+
+func cmdVersion() *cobra.Command {
+	cmd := cobra.Command{
+		Use:   "version",
+		Short: "Version the application",
+		Long:  `Version the application server.`,
+		Run:   cmdVersionRun(gitCommit, goVersion, built, version),
+	}
+
+	cmd.Flags().StringVarP(&version, "version", "", "", "show version")
+	return &cmd
+}
+
+func cmdVersionRun(gitCommit, goVersion, built, version string) func(*cobra.Command, []string) {
+	return func(cmd *cobra.Command, args []string) {
+
+		// Observe that the third line has no trailing tab,
+		// so its final cell is not part of an aligned column.
+		const padding = 3
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', tabwriter.TabIndent)
+		fmt.Fprintln(w, "PipeHub:")
+		fmt.Fprintln(w, "    Version:\t", version)
+		fmt.Fprintln(w, "    Go version:\t", goVersion)
+		fmt.Fprintln(w, "    Git commit:\t", gitCommit)
+		fmt.Fprintln(w, "    Built:\t", built)
+		w.Flush()
 	}
 }
