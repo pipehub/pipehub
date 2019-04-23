@@ -1,5 +1,3 @@
-name: $(SourceBranchName)-$(Rev:.r)
-
 variables:
   EXEC_CONTAINER: false
   GO111MODULES: on
