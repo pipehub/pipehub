@@ -20,25 +20,28 @@ stages:
     displayName: Quality
     jobs:
       - job: quality_go_test
-        container: pipehub/ci:2
+        container: pipehub/ci:3
         displayName: '| Go Test'
+        variables:
+          BUILD_NUMBER: $(Build.BuildNumber)
+          CI_PULL_REQUEST: https://github.com/pipehub/pipehub/pull/$(System.PullRequest.PullRequestNumber)
         steps:
-          - script: make go-test
+          - script: COVERALLS_TOKEN=$(COVERALLS_TOKEN_SECRET) make go-test
 
       - job: quality_go_linter
-        container: pipehub/ci:2
+        container: pipehub/ci:3
         displayName: '| Go Linter'
         steps:
           - script: make go-linter
 
       - job: quality_go_linter_vendor
-        container: pipehub/ci:2
+        container: pipehub/ci:3
         displayName: '| Go Linter Vendor'
         steps:
           - script: make go-linter-vendor
 
       - job: quality_docker_linter
-        container: pipehub/ci:2
+        container: pipehub/ci:3
         displayName: '| Go Docker'
         steps:
           - script: make docker-linter
@@ -48,7 +51,7 @@ stages:
     dependsOn: quality
     jobs:
       - job: build_pipehub
-        container: pipehub/ci:2
+        container: pipehub/ci:3
         displayName: '| PipeHub'
         steps:
           - script: go build -mod readonly -o bin/pipehub/pipehub cmd/pipehub/*.go

@@ -3,6 +3,10 @@
     {
       "Repository": "github.com/rakyll/gotest",
       "Commit": "86f0749cd8ccdc08f2edb69f170ad6f06393455d"
+    },
+    {
+      "Repository": "github.com/mattn/goveralls",
+      "Commit": "dc71fe1ae5546d88e1182dd454025f83adba64f5"
     }
   ],
   "RetoolVersion": "1.3.7"
