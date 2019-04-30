@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"runtime"
+	"text/tabwriter"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
@@ -17,9 +19,15 @@ import (
 
 var done = make(chan os.Signal, 1)
 
+var (
+	gitCommit      string
+	pipehubVersion string
+	builtAt        string
+)
+
 func main() {
 	var rootCmd = &cobra.Command{Use: "pipehub"}
-	rootCmd.AddCommand(cmdStart(), cmdGenerate())
+	rootCmd.AddCommand(cmdStart(), cmdGenerate(), cmdVersion())
 	if err := rootCmd.Execute(); err != nil {
 		err = errors.Wrap(err, "pipehub cli initialization error")
 		fatal(err)
@@ -133,5 +141,39 @@ func cmdGenerateRun(configPath, workspacePath *string) func(*cobra.Command, []st
 			err = errors.Wrap(err, "pipehub generator execute error")
 			fatal(err)
 		}
+	}
+}
+
+func cmdVersion() *cobra.Command {
+	cmd := cobra.Command{
+		Use:   "version",
+		Short: "Version the application",
+		Long:  `Version the application server.`,
+		Run:   cmdVersionRun(gitCommit, builtAt, pipehubVersion),
+	}
+
+	cmd.Flags().StringVarP(&pipehubVersion, "version", "", "", "show version")
+	return &cmd
+}
+
+func cmdVersionRun(options ...string) func(*cobra.Command, []string) {
+	return func(cmd *cobra.Command, args []string) {
+		const padding = 3
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', tabwriter.TabIndent)
+		fmt.Fprintln(w, "PipeHub:")
+		if len(options[2]) > 0 {
+			fmt.Fprintln(w, "    Version:\t", options[2])
+		}
+
+		fmt.Fprintln(w, "    Go version:\t", runtime.Version())
+		if len(options[0]) > 0 {
+			fmt.Fprintln(w, "    Git commit:\t", options[0])
+		}
+
+		if len(options[1]) > 0 {
+			fmt.Fprintln(w, "    Built:\t", options[1])
+		}
+
+		w.Flush()
 	}
 }
