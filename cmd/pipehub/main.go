@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"runtime"
 	"text/tabwriter"
 
 	"github.com/pkg/errors"
@@ -19,10 +20,9 @@ import (
 var done = make(chan os.Signal, 1)
 
 var (
-	gitCommit string
-	goVersion string
-	version   string
-	built     string
+	gitCommit      string
+	pipehubVersion string
+	builtAt        string
 )
 
 func main() {
@@ -149,25 +149,31 @@ func cmdVersion() *cobra.Command {
 		Use:   "version",
 		Short: "Version the application",
 		Long:  `Version the application server.`,
-		Run:   cmdVersionRun(gitCommit, goVersion, built, version),
+		Run:   cmdVersionRun(gitCommit, builtAt, pipehubVersion),
 	}
 
-	cmd.Flags().StringVarP(&version, "version", "", "", "show version")
+	cmd.Flags().StringVarP(&pipehubVersion, "version", "", "", "show version")
 	return &cmd
 }
 
-func cmdVersionRun(gitCommit, goVersion, built, version string) func(*cobra.Command, []string) {
+func cmdVersionRun(options ...string) func(*cobra.Command, []string) {
 	return func(cmd *cobra.Command, args []string) {
-
-		// Observe that the third line has no trailing tab,
-		// so its final cell is not part of an aligned column.
 		const padding = 3
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', tabwriter.TabIndent)
 		fmt.Fprintln(w, "PipeHub:")
-		fmt.Fprintln(w, "    Version:\t", version)
-		fmt.Fprintln(w, "    Go version:\t", goVersion)
-		fmt.Fprintln(w, "    Git commit:\t", gitCommit)
-		fmt.Fprintln(w, "    Built:\t", built)
+		if len(options[2]) > 0 {
+			fmt.Fprintln(w, "    Version:\t", options[2])
+		}
+
+		fmt.Fprintln(w, "    Go version:\t", runtime.Version())
+		if len(options[0]) > 0 {
+			fmt.Fprintln(w, "    Git commit:\t", options[0])
+		}
+
+		if len(options[1]) > 0 {
+			fmt.Fprintln(w, "    Built:\t", options[1])
+		}
+
 		w.Flush()
 	}
 }

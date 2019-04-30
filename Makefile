@@ -6,8 +6,7 @@ WORKSPACE_PATH     = $(CURDIR)
 RAWTAG             = $(shell git tag --points-at | head -n1 | cut -c2-)
 CI_SERVICE				?= local
 GIT_COMMIT         = $(shell git rev-list -1 HEAD)
-GO_VERSION         = $(shell go version | cut -d' ' -f3)
-BUILT              = $(shell date)
+BUILT_AT           = $(shell date)
 VERSION            = 0.2.0
 
 configure:
@@ -21,7 +20,7 @@ release:
 build:
 	@rm -f internal/application/server/service/pipe/dynamic.go
 	@go run cmd/pipehub/*.go generate -c $(CONFIG_PATH) -w $(WORKSPACE_PATH)
-	@go build -ldflags '-X "main.gitCommit=$(GIT_COMMIT)" -X "main.goVersion=$(GO_VERSION)" -X "main.built=$(BUILT)" -X "main.version=$(VERSION)"' -o cmd/pipehub/pipehub cmd/pipehub/*.go
+	@go build -ldflags '-X "main.gitCommit=$(GIT_COMMIT)" -X "main.builtAt=$(BUILT_AT)" -X "main.pipehubVersion=$(VERSION)"' -o cmd/pipehub/pipehub cmd/pipehub/*.go
 
 pre-pr: go-test go-linter go-linter-vendor docker-linter
 
