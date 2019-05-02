@@ -151,15 +151,15 @@ func cmdVersion() *cobra.Command {
 	}
 }
 
-func cmdVersionRun(cmd *cobra.Command, _ []string) {
+func cmdVersionRun(_ *cobra.Command, _ []string) {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.TabIndent)
 	fmt.Fprintln(w, "PipeHub:")
 	if version != "" {
-		fmt.Fprintln(w, "\t  Version:\t", version)
+		fmt.Fprintln(w, "  Version:\t", version)
 	}
-	fmt.Fprintln(w, "\t  Go version:\t", runtime.Version())
+	fmt.Fprintln(w, "  Go version:\t", runtime.Version())
 	if builtAt != "" {
-		fmt.Fprintln(w, "\t  Built At:\t", builtAt)
+		fmt.Fprintln(w, "  Built At:\t", builtAt)
 	}
 	w.Flush()
 }
