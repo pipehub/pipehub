@@ -7,6 +7,8 @@ RAWTAG             = $(shell git tag --points-at | head -n1 | cut -c2-)
 CI_SERVICE        ?= local
 VERSION            = $(shell git describe --tags --always --dirty="-dev")
 BUILT_AT           = $(shell date -u '+%Y-%m-%d %H:%M UTC')
+GOPROXY           ?= https://proxy.golang.org
+GO111MODULE       ?= on
 
 configure:
 	@git config pull.rebase true
