@@ -17,12 +17,10 @@ import (
 	"github.com/pipehub/pipehub/internal/infra/config"
 )
 
-var done = make(chan os.Signal, 1)
-
 var (
-	gitCommit      string
-	pipehubVersion string
-	builtAt        string
+	version string
+	builtAt string
+	done    = make(chan os.Signal, 1)
 )
 
 func main() {
@@ -145,35 +143,23 @@ func cmdGenerateRun(configPath, workspacePath *string) func(*cobra.Command, []st
 }
 
 func cmdVersion() *cobra.Command {
-	cmd := cobra.Command{
+	return &cobra.Command{
 		Use:   "version",
 		Short: "Version the application",
 		Long:  `Version the application server.`,
-		Run:   cmdVersionRun(gitCommit, builtAt, pipehubVersion),
+		Run:   cmdVersionRun,
 	}
-
-	cmd.Flags().StringVarP(&pipehubVersion, "version", "", "", "show version")
-	return &cmd
 }
 
-func cmdVersionRun(options ...string) func(*cobra.Command, []string) {
-	return func(cmd *cobra.Command, args []string) {
-		const padding = 3
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', tabwriter.TabIndent)
-		fmt.Fprintln(w, "PipeHub:")
-		if len(options[2]) > 0 {
-			fmt.Fprintln(w, "    Version:\t", options[2])
-		}
-
-		fmt.Fprintln(w, "    Go version:\t", runtime.Version())
-		if len(options[0]) > 0 {
-			fmt.Fprintln(w, "    Git commit:\t", options[0])
-		}
-
-		if len(options[1]) > 0 {
-			fmt.Fprintln(w, "    Built:\t", options[1])
-		}
-
-		w.Flush()
+func cmdVersionRun(cmd *cobra.Command, _ []string) {
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.TabIndent)
+	fmt.Fprintln(w, "PipeHub:")
+	if version != "" {
+		fmt.Fprintln(w, "\t  Version:\t", version)
 	}
+	fmt.Fprintln(w, "\t  Go version:\t", runtime.Version())
+	if builtAt != "" {
+		fmt.Fprintln(w, "\t  Built At:\t", builtAt)
+	}
+	w.Flush()
 }
