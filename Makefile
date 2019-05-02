@@ -5,8 +5,8 @@ CONFIG_PATH       ?= $(CURDIR)/cmd/pipehub/pipehub.hcl
 WORKSPACE_PATH     = $(CURDIR)
 RAWTAG             = $(shell git tag --points-at | head -n1 | cut -c2-)
 CI_SERVICE         ?= local
-GIT_COMMIT         = $(shell git rev-list -1 HEAD)
-BUILT_AT           = $(shell date)
+GIT_COMMIT         = $(shell git describe --tags --always --dirty="-dev")
+BUILT_AT           = $(shell date -u '+%Y-%m-%d %H:%M UTC')
 VERSION            = 0.2.0
 
 configure:
