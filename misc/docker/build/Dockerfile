@@ -1,4 +1,4 @@
-FROM golang:1.12.2-stretch
+FROM golang:1.12.7-buster
 
 ARG TAG=HEAD
 
