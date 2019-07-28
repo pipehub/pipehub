@@ -3,25 +3,25 @@
 package pipe
 
 import (
-  "github.com/pkg/errors"
+	"github.com/pkg/errors"
 
-  base "github.com/pipehub/pipehub"
+	base "github.com/pipehub/pipehub"
 )
 
 func (m *Manager) InitPipes() error {
-  {
-    cfg := m.config("github.com/pipehub/pipehub", "0.1.0")
-    client, err := base.NewClient(cfg)
-    if err != nil {
-      return errors.Wrap(err, "'github.com/pipehub/pipehub' initialization error")
-    }
+	{
+		cfg := m.config("github.com/pipehub/pipehub", "0.1.0")
+		client, err := base.NewClient(cfg)
+		if err != nil {
+			return errors.Wrap(err, "'github.com/pipehub/pipehub' initialization error")
+		}
 
-    m.instances["base"] = instance{
+		m.instances["base"] = instance{
 			id:         "github.com/pipehub/pipehub",
 			importPath: "github.com/pipehub/pipehub",
 			instancer:  client,
 		}
-  }
+	}
 
-  return nil
+	return nil
 }
