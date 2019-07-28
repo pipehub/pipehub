@@ -3,5 +3,5 @@
 package pipe
 
 func (m *Manager) InitPipes() error {
-  return nil
+	return nil
 }

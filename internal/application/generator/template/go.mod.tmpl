@@ -6,18 +6,18 @@
 require {{ if $pipe.Module }}{{ $pipe.Module }}{{ else }}{{ $pipe.ImportPath }}{{ end }} {{$pipe.Revision}}
 {{ else }}
 require (
-  {{- range .Pipe}}
-  {{ if .Module }}{{ .Module }}{{ else }}{{ .ImportPath }}{{ end }} {{.Revision}}
-  {{- end}}
+	{{- range .Pipe}}
+	{{ if .Module }}{{ .Module }}{{ else }}{{ .ImportPath }}{{ end }} {{.Revision}}
+	{{- end}}
 )
 {{ end -}}
 {{ if gt .PipeModuleCount 1 }}
 replace (
-  {{- range .Pipe -}}
-  {{- if .Module }}
-  {{ .Module }} {{ .Revision }} => {{ .ImportPath }} {{ .Revision }}
-  {{- end }}
-  {{- end }}
+	{{- range .Pipe -}}
+	{{- if .Module }}
+	{{ .Module }} {{ .Revision }} => {{ .ImportPath }} {{ .Revision }}
+	{{- end }}
+	{{- end }}
 )
 {{ else -}}
 {{- range .Pipe -}}
