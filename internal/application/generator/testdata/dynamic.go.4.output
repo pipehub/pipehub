@@ -9,7 +9,14 @@ import (
 )
 
 func (m *Manager) InitPipes() error {
-	{
+	state := [][]string{
+		{"github.com/diegobernardes/pipehub", "diegobernardes/pipehub"},
+	}
+	if err := m.available(state); err != nil {
+		return errors.Wrap(err, "missing pipe during compilation")
+	}
+
+	if m.enabled("github.com/diegobernardes/pipehub", "diegobernardes/pipehub") {
 		cfg := m.config("github.com/diegobernardes/pipehub", "diegobernardes/pipehub")
 		client, err := pipehub.NewClient(cfg)
 		if err != nil {

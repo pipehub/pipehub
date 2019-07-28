@@ -76,6 +76,40 @@ func (m Manager) config(importPath, id string) map[string]interface{} {
 	return nil
 }
 
+func (m Manager) enabled(importPath, id string) bool {
+	for _, pipe := range m.pipes {
+		if (pipe.Module != "") && (pipe.ImportPath == importPath) && (pipe.Module == id) {
+			return true
+		}
+
+		if (pipe.ImportPath == importPath) && (pipe.Version == id) {
+			return true
+		}
+	}
+	return false
+}
+
+func (m Manager) available(state [][]string) error {
+	for _, s := range state {
+		if len(s) != 2 {
+			return fmt.Errorf("invalid state, expected 2 elements, found %d", len(s))
+		}
+
+		for _, pipe := range m.pipes {
+			if (pipe.Module != "") && (pipe.ImportPath == s[0]) && (pipe.Module == s[1]) {
+				continue
+			}
+
+			if (pipe.ImportPath == s[0]) && (pipe.Version == s[1]) {
+				continue
+			}
+
+			return fmt.Errorf("pipe '%s' at version '%s' was not built with pipehub", s[0], s[1])
+		}
+	}
+	return nil
+}
+
 // NewManager start the pipes.
 func NewManager(pipes []internal.Pipe) (Manager, error) {
 	m := Manager{

@@ -13,7 +13,18 @@ import (
 )
 
 func (m *Manager) InitPipes() error {
-	{
+	state := [][]string{
+		{"github.com/diegobernardes/loadbalancer", "0.5.0"},
+		{"github.com/diegobernardes/proxy", "0.7.0"},
+		{"github.com/diegobernardes/ratelimit", "0.6.0"},
+		{"github.com/pipehub/pipehub", "pipehub/pipehub"},
+		{"github.com/pipehub/sample", "pipehub/sample"},
+	}
+	if err := m.available(state); err != nil {
+		return errors.Wrap(err, "missing pipe during compilation")
+	}
+
+	if m.enabled("github.com/diegobernardes/loadbalancer", "0.5.0") {
 		cfg := m.config("github.com/diegobernardes/loadbalancer", "0.5.0")
 		client, err := loadbalancer.NewClient(cfg)
 		if err != nil {
@@ -27,7 +38,7 @@ func (m *Manager) InitPipes() error {
 		}
 	}
 
-	{
+	if m.enabled("github.com/diegobernardes/proxy", "0.7.0") {
 		cfg := m.config("github.com/diegobernardes/proxy", "0.7.0")
 		client, err := proxy.NewClient(cfg)
 		if err != nil {
@@ -41,7 +52,7 @@ func (m *Manager) InitPipes() error {
 		}
 	}
 
-	{
+	if m.enabled("github.com/diegobernardes/ratelimit", "0.6.0") {
 		cfg := m.config("github.com/diegobernardes/ratelimit", "0.6.0")
 		client, err := ratelimit.NewClient(cfg)
 		if err != nil {
@@ -55,7 +66,7 @@ func (m *Manager) InitPipes() error {
 		}
 	}
 
-	{
+	if m.enabled("github.com/pipehub/pipehub", "pipehub/pipehub") {
 		cfg := m.config("github.com/pipehub/pipehub", "pipehub/pipehub")
 		client, err := pipehub.NewClient(cfg)
 		if err != nil {
@@ -69,7 +80,7 @@ func (m *Manager) InitPipes() error {
 		}
 	}
 
-	{
+	if m.enabled("github.com/pipehub/sample", "pipehub/sample") {
 		cfg := m.config("github.com/pipehub/sample", "pipehub/sample")
 		client, err := newpipe.NewClient(cfg)
 		if err != nil {

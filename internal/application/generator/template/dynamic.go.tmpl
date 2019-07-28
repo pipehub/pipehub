@@ -15,8 +15,22 @@ import (
 )
 {{ end }}
 func (m *Manager) InitPipes() error {
-{{- range .Pipe }}
-	{
+{{- if gt (len .Pipe) 0 }}
+{{- if eq (len .Pipe) 1 }}
+	{{- $pipe := (index .Pipe 0) }}
+	state := [][]string{{`{{`}}"{{ $pipe.ImportPath }}", "{{ if $pipe.Module }}{{ $pipe.Module }}{{ else }}{{ $pipe.Revision }}{{ end }}"}}
+{{ else }}
+	state := [][]string{
+	{{- range .Pipe }}
+		{"{{ .ImportPath }}", "{{ if .Module }}{{ .Module }}{{ else }}{{ .Revision }}{{ end }}"},
+	{{- end }}
+	}
+{{- end }}
+	if err := m.available(state); err != nil {
+		return errors.Wrap(err, "missing pipe during compilation")
+	}
+{{ range .Pipe }}
+	if m.enabled("{{ .ImportPath }}", "{{ if .Module }}{{ .Module }}{{ else }}{{ .Revision }}{{ end }}") {
 		cfg := m.config("{{ .ImportPath }}", "{{ if .Module }}{{ .Module }}{{ else }}{{ .Revision }}{{ end }}")
 		client, err := {{ .Alias }}.NewClient(cfg)
 		if err != nil {
@@ -30,6 +44,7 @@ func (m *Manager) InitPipes() error {
 		}
 	}
 {{ end }}
+{{- end }}
 	return nil
 }
-{{- end -}}
+{{ end }}
