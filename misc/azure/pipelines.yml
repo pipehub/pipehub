@@ -20,7 +20,7 @@ stages:
     displayName: Quality
     jobs:
       - job: quality_go_test
-        container: pipehub/ci:5
+        container: pipehub/ci:6
         displayName: '| Go Test'
         variables:
           BUILD_NUMBER: $(Build.BuildNumber)
@@ -29,19 +29,19 @@ stages:
           - script: COVERALLS_TOKEN=$(COVERALLS_TOKEN_SECRET) make go-test
 
       - job: quality_go_linter
-        container: pipehub/ci:5
+        container: pipehub/ci:6
         displayName: '| Go Linter'
         steps:
           - script: make go-linter
 
       - job: quality_go_linter_vendor
-        container: pipehub/ci:5
+        container: pipehub/ci:6
         displayName: '| Go Linter Vendor'
         steps:
           - script: make go-linter-vendor
 
       - job: quality_docker_linter
-        container: pipehub/ci:5
+        container: pipehub/ci:6
         displayName: '| Go Docker'
         steps:
           - script: make docker-linter
@@ -51,7 +51,7 @@ stages:
     dependsOn: quality
     jobs:
       - job: build_pipehub
-        container: pipehub/ci:5
+        container: pipehub/ci:6
         displayName: '| PipeHub'
         steps:
           - script: go build -mod readonly -o bin/pipehub/pipehub cmd/pipehub/*.go

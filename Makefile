@@ -1,6 +1,6 @@
 PROJECT_PATH       = /opt/pipehub
 DOCKER_CI_IMAGE    = pipehub/ci
-DOCKER_CI_VERSION  = 5
+DOCKER_CI_VERSION  = 6
 CONFIG_PATH       ?= $(CURDIR)/cmd/pipehub/pipehub.hcl
 WORKSPACE_PATH     = $(CURDIR)
 RAWTAG             = $(shell git tag --points-at | head -n1 | cut -c2-)
