@@ -41,6 +41,8 @@ enable      = [
     "opinionated"
   ]
 
+  disabled-checks = ["whyNoLint"]
+
 [issues]
   [[issues.exclude-rules]]
   path    = ".+_test.go"

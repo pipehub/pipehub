@@ -1,5 +1,5 @@
-FROM golangci/golangci-lint:v1.17.1 AS golangci
-FROM golang:1.12.7-buster
+FROM golangci/golangci-lint:v1.23.6 AS golangci
+FROM golang:1.13.8-buster
 
 SHELL ["/bin/bash", "-c"]
 
