@@ -1,4 +1,4 @@
-FROM golang:1.13.8-buster
+FROM golang:1.15.2-buster
 
 ARG TAG=HEAD
 
