@@ -1,5 +1,36 @@
 # Changelog
 
+## v4.1.2 (2020-06-02)
+
+- fix that handles MethodNotAllowed with path variables, thank you @caseyhadden for your contribution
+- fix to replace nested wildcards correctly in RoutePattern, thank you @@unmultimedio for your contribution
+- History of changes: see https://github.com/go-chi/chi/compare/v4.1.1...v4.1.2
+
+
+## v4.1.1 (2020-04-16)
+
+- fix for issue https://github.com/go-chi/chi/issues/411 which allows for overlapping regexp
+  route to the correct handler through a recursive tree search, thanks to @Jahaja for the PR/fix!
+- new middleware.RouteHeaders as a simple router for request headers with wildcard support
+- History of changes: see https://github.com/go-chi/chi/compare/v4.1.0...v4.1.1
+
+
+## v4.1.0 (2020-04-1)
+
+- middleware.LogEntry: Write method on interface now passes the response header
+  and an extra interface type useful for custom logger implementations.
+- middleware.WrapResponseWriter: minor fix
+- middleware.Recoverer: a bit prettier
+- History of changes: see https://github.com/go-chi/chi/compare/v4.0.4...v4.1.0
+
+
+## v4.0.4 (2020-03-24)
+
+- middleware.Recoverer: new pretty stack trace printing (https://github.com/go-chi/chi/pull/496)
+- a few minor improvements and fixes
+- History of changes: see https://github.com/go-chi/chi/compare/v4.0.3...v4.0.4
+
+
 ## v4.0.3 (2020-01-09)
 
 - core: fix regexp routing to include default value when param is not matched
