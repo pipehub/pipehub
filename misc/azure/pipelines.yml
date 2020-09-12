@@ -18,7 +18,7 @@ trigger:
 resources:
   containers:
     - container: ci
-      image: pipehub/ci:6
+      image: pipehub/ci:7
 
 stages:
   - stage: quality
