@@ -1,6 +1,5 @@
 variables:
   EXEC_CONTAINER: false
-  GO111MODULES: on
 
 trigger:
   batch: true
