@@ -30,7 +30,7 @@ pre-pr: go-test go-linter go-linter-vendor docker-linter
 .PHONY: go-test
 go-test:
 ifeq ($(EXEC_CONTAINER), false)
-	@go test -mod readonly -failfast -race -covermode=atomic -coverprofile=test.cover -json ./... | tparse -all
+	@go test -failfast -race -covermode=atomic -coverprofile=test.cover -json ./... | tparse -all
 	@go tool cover -func=test.cover
 ifdef COVERALLS_TOKEN
 	@goveralls -coverprofile=test.cover -service="$(CI_SERVICE)"
@@ -52,7 +52,6 @@ endif
 go-linter-vendor:
 ifeq ($(EXEC_CONTAINER), false)
 	@go mod tidy
-	@go mod vendor
 	@git diff --exit-code
 else
 	@TARGET=go-linter-vendor make docker-exec
