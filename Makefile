@@ -7,24 +7,27 @@ RAWTAG             = $(shell git tag --points-at | head -n1 | cut -c2-)
 CI_SERVICE        ?= local
 VERSION            = $(shell git describe --tags --always --dirty="-dev")
 BUILT_AT           = $(shell date -u '+%Y-%m-%d %H:%M UTC')
-GOPROXY           ?= https://proxy.golang.org
-GO111MODULE       ?= on
 
+.PHONY: configure
 configure:
 	@git config pull.rebase true
 	@git config remote.origin.prune true
 	@git config branch.master.mergeoptions "--ff-only"
 
+.PHONY: release
 release:
 	@PIPEHUB_DOCKER_IMAGE_VERSION=$(RAWTAG) goreleaser release --rm-dist
 
+.PHONY: build
 build:
 	@rm -f internal/application/server/service/pipe/dynamic.go
 	@go run cmd/pipehub/*.go generate -c $(CONFIG_PATH) -w $(WORKSPACE_PATH)
 	@go build -ldflags '-X "main.version=$(VERSION)" -X "main.builtAt=$(BUILT_AT)"' -o cmd/pipehub/pipehub cmd/pipehub/*.go
 
+.PHONY: pre-pr
 pre-pr: go-test go-linter go-linter-vendor docker-linter
 
+.PHONY: go-test
 go-test:
 ifeq ($(EXEC_CONTAINER), false)
 	@gotest -mod readonly -failfast -race -covermode=atomic -coverprofile=test.cover ./...
@@ -37,6 +40,7 @@ else
 	@TARGET=go-test make docker-exec
 endif
 
+.PHONY: go-linter
 go-linter:
 ifeq ($(EXEC_CONTAINER), false)
 	@golangci-lint run -c misc/golangci/golangci.toml
@@ -44,6 +48,7 @@ else
 	@TARGET=go-linter make docker-exec
 endif
 
+.PHONY: go-linter-vendor
 go-linter-vendor:
 ifeq ($(EXEC_CONTAINER), false)
 	@go mod tidy
@@ -53,6 +58,7 @@ else
 	@TARGET=go-linter-vendor make docker-exec
 endif
 
+.PHONY: docker-linter
 docker-linter:
 ifeq ($(EXEC_CONTAINER), false)
 	@hadolint misc/docker/ci/Dockerfile
@@ -60,6 +66,7 @@ else
 	@TARGET=docker-linter make docker-exec
 endif
 
+.PHONY: docker-exec
 docker-exec:
 	@docker run \
 		-t \
@@ -72,6 +79,7 @@ docker-exec:
 		$(DOCKER_CI_IMAGE):$(DOCKER_CI_VERSION) \
 		make $(TARGET)
 
+.PHONY: docker-ci-image
 docker-ci-image:
 	@docker build -t $(DOCKER_CI_IMAGE):$(DOCKER_CI_VERSION) -f misc/docker/ci/Dockerfile .
 ifeq ($(PUSH), true)
