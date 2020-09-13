@@ -39,6 +39,7 @@ func (m *Manager) Close(ctx context.Context) error {
 }
 
 // Fetch the instance of a pipe.
+// nolint: golint
 func (m Manager) Fetch(importPathAlias string) (instance, error) {
 	instance, ok := m.instances[importPathAlias]
 	if !ok {

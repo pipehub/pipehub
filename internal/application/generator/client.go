@@ -146,7 +146,7 @@ func (c Client) genTemplateContent() templateContent {
 		pipes = append(pipes, p)
 	}
 
-	// Sort is extremelly important to ensure that the generated files have always the same format.
+	// Sort is extremely important to ensure that the generated files have always the same format.
 	sort.Sort(pipes)
 
 	return templateContent{

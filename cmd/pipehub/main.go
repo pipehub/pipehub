@@ -17,6 +17,7 @@ import (
 	"github.com/pipehub/pipehub/internal/infra/config"
 )
 
+// nolint: gochecknoglobals
 var (
 	version string
 	builtAt string
@@ -85,7 +86,7 @@ func cmdStartRun(configPath *string) func(*cobra.Command, []string) {
 			if ctxShutdown.Err() == context.Canceled {
 				return
 			}
-			fmt.Println("pipehub did not gracefuly stopped")
+			fmt.Println("pipehub did not gracefully stopped")
 			os.Exit(1)
 		}()
 
