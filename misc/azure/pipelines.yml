@@ -58,4 +58,4 @@ stages:
         container: ci
         displayName: '| PipeHub'
         steps:
-          - script: go build -mod readonly -o bin/pipehub/pipehub cmd/pipehub/*.go
+          - script: go build -o bin/pipehub/pipehub cmd/pipehub/*.go
