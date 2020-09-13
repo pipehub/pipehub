@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httputil"
+	"sync"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/hostrouter"
@@ -150,6 +151,13 @@ func (s *Server) initProxy(handlerID string) (*chi.Mux, error) {
 	proxy := &httputil.ReverseProxy{
 		Director:  director,
 		Transport: s.config.RoundTripper,
+		BufferPool: &bufferPool{
+			pool: sync.Pool{
+				New: func() interface{} {
+					return make([]byte, 32*1024)
+				},
+			},
+		},
 	}
 	proxyHandler := http.HandlerFunc(proxy.ServeHTTP)
 
