@@ -1,6 +1,6 @@
 PROJECT_PATH       = /opt/pipehub
 DOCKER_CI_IMAGE    = pipehub/ci
-DOCKER_CI_VERSION  = 8
+DOCKER_CI_VERSION  = 9
 CONFIG_PATH       ?= $(CURDIR)/cmd/pipehub/pipehub.hcl
 WORKSPACE_PATH     = $(CURDIR)
 RAWTAG             = $(shell git tag --points-at | head -n1 | cut -c2-)
@@ -30,7 +30,7 @@ pre-pr: go-test go-linter go-linter-vendor docker-linter
 .PHONY: go-test
 go-test:
 ifeq ($(EXEC_CONTAINER), false)
-	@gotest -mod readonly -failfast -race -covermode=atomic -coverprofile=test.cover ./...
+	@go test -mod readonly -failfast -race -covermode=atomic -coverprofile=test.cover -json ./... | tparse -all
 	@go tool cover -func=test.cover
 ifdef COVERALLS_TOKEN
 	@goveralls -coverprofile=test.cover -service="$(CI_SERVICE)"
